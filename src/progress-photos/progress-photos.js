@@ -2,6 +2,14 @@ let allPhotos = [];
 let allPoses = [];
 let settings = {};
 
+const ANGLE_ORDER = [
+    '90° Right',
+    '45° Right',
+    'Front',
+    '45° Left',
+    '90° Left'
+];
+
 export async function loadProgressPhotos() {
     const mainContent = document.getElementById('main-content');
     mainContent.innerHTML = '<h1>Progress Photo Dashboard</h1><p>Loading photos...</p>';
@@ -31,22 +39,32 @@ function renderDashboard() {
     
     let html = '<h1>Progress Photo Dashboard</h1>';
     
-    // Add Pose Selector
+    // Add Pose Selector and Size Slider
     html += `
         <div class="filter-container">
-            <label for="pose-select">Filter by Pose:</label>
-            <select id="pose-select">
-                ${allPoses.map(pose => `<option value="${pose.pose_id}">${pose.pose_name}</option>`).join('')}
-            </select>
+            <div class="filter-item">
+                <label for="pose-select">Filter by Pose:</label>
+                <select id="pose-select">
+                    ${allPoses.map(pose => `<option value="${pose.pose_id}">${pose.pose_name}</option>`).join('')}
+                </select>
+            </div>
+            <div class="filter-item">
+                <label for="size-slider">Photo Size:</label>
+                <input type="range" id="size-slider" min="100" max="500" value="${settings.progress_photo_size || 150}">
+                <span id="size-value">${settings.progress_photo_size || 150}px</span>
+            </div>
         </div>
     `;
 
+    html += '<div id="photo-grid-header" class="photo-grid-header"></div>';
     html += '<div id="photo-grid-root" class="photo-grid-container">';
     html += '</div>';
     
     mainContent.innerHTML = html;
 
     const poseSelect = document.getElementById('pose-select');
+    const sizeSlider = document.getElementById('size-slider');
+    const sizeValue = document.getElementById('size-value');
     
     // Set default pose from settings
     let defaultPoseId = settings.progress_photo_default_pose;
@@ -67,11 +85,21 @@ function renderDashboard() {
         window.api.updateSetting('progress_photo_default_pose', newPoseId);
     });
 
+    sizeSlider.addEventListener('input', (e) => {
+        const newSize = e.target.value;
+        sizeValue.textContent = `${newSize}px`;
+        updatePhotoGrid(poseSelect.value, newSize);
+    });
+
+    sizeSlider.addEventListener('change', (e) => {
+        window.api.updateSetting('progress_photo_size', e.target.value);
+    });
+
     // Initial render of the grid
-    updatePhotoGrid(poseSelect.value);
+    updatePhotoGrid(poseSelect.value, sizeSlider.value);
 }
 
-function updatePhotoGrid(poseId) {
+function updatePhotoGrid(poseId, customSize) {
     const gridRoot = document.getElementById('photo-grid-root');
     
     const numericPoseId = parseInt(poseId, 10);
@@ -98,48 +126,58 @@ function updatePhotoGrid(poseId) {
         return new Date(a) - new Date(b);
     });
 
+
+    // Update Header
+    const gridHeader = document.getElementById('photo-grid-header');
+    const targetWidth = parseInt(customSize, 10) || (poseSettings ? (poseSettings.collection_size || 150) : 150);
+    
+    gridHeader.innerHTML = `
+        <div class="header-date-column">Date</div>
+        <div class="header-items">
+            ${ANGLE_ORDER.map(angle => `<div class="header-item" style="--item-width: ${targetWidth}px;">${angle}</div>`).join('')}
+        </div>
+    `;
+
     let html = '';
     for (const date of sortedDates) {
         html += `<div class="photo-row">`;
-        html += `<div class="photo-date-header">${date}</div>`;
+        html += `<div class="photo-date-column">${date}</div>`;
         html += `<div class="photo-items">`;
         
-        for (const photo of groupedPhotos[date]) {
-            const fileName = `${photo.PHOTO_ID}.${photo.EXTENSION}`;
-            const photoUrl = `photo://${fileName}`;
+        for (const angle of ANGLE_ORDER) {
+            const photo = groupedPhotos[date].find(p => p.ANGLE === angle);
             
-            // Dynamic Cropping Logic
-            let containerStyle = '';
-            
-            if (poseSettings && photo.Y_LANDMARK_1 !== null && photo.Y_LANDMARK_2 !== null && photo.X_LANDMARK !== null) {
-                const aspectRatio = poseSettings.aspect_ratio || 1.0;
-                const targetWidth = poseSettings.collection_size || 150;
+            const aspectRatio = poseSettings ? (poseSettings.aspect_ratio || 1.0) : 1.0;
+            const targetHeight = targetWidth / aspectRatio;
 
-                containerStyle = `
-                    position: relative;
-                    overflow: hidden;
-                    width: ${targetWidth}px;
-                    height: ${targetWidth / aspectRatio}px;
-                    background-color: #f0f0f0;
-                `;
-            }
+            if (photo) {
+                const fileName = `${photo.PHOTO_ID}.${photo.EXTENSION}`;
+                const photoUrl = `photo://${fileName}`;
 
-            html += `
-                <div class="photo-item" style="${poseSettings ? `width: ${poseSettings.collection_size || 150}px;` : ''}">
-                    <div class="photo-container" style="${containerStyle}">
-                        <img src="${photoUrl}" alt="${photo.ANGLE}" class="progress-photo" style="display: none;" 
-                             data-photo='${JSON.stringify(photo)}' 
-                             data-pose-settings='${JSON.stringify(poseSettings)}'
-                             onload="applyDynamicCrop(this)"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="photo-placeholder" style="display: none;">
-                            ID: ${photo.PHOTO_ID}<br>
-                            ${photo.ANGLE}
+                html += `
+                    <div class="photo-item" style="--item-width: ${targetWidth}px;">
+                        <div class="photo-container" style="--container-width: ${targetWidth}px; --container-height: ${targetHeight}px;">
+                            <img src="${photoUrl}" alt="${photo.ANGLE}" class="progress-photo" 
+                                 data-photo='${JSON.stringify(photo)}' 
+                                 data-pose-settings='${JSON.stringify(poseSettings)}'
+                                 onload="applyDynamicCrop(this)"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="photo-placeholder">
+                                ID: ${photo.PHOTO_ID}<br>
+                                ${photo.ANGLE}
+                            </div>
                         </div>
                     </div>
-                    <div class="photo-label">${photo.ANGLE}</div>
-                </div>
-            `;
+                `;
+            } else {
+                // Render a blank grey box for missing angles
+                html += `
+                    <div class="photo-item" style="--item-width: ${targetWidth}px;">
+                        <div class="photo-container blank-placeholder" style="--container-width: ${targetWidth}px; --container-height: ${targetHeight}px;">
+                        </div>
+                    </div>
+                `;
+            }
         }
         
         html += `</div></div>`;
@@ -158,11 +196,8 @@ window.applyDynamicCrop = function(img) {
     }
 
     const naturalWidth = img.naturalWidth;
-    const naturalHeight = img.naturalHeight;
-
     const cropPercent = poseSettings.cropping_percent || 50;
     const aspectRatio = poseSettings.aspect_ratio || 1.0;
-    const targetWidth = poseSettings.collection_size || 150;
 
     // Landmarks are percentages (0-1) of original image dimensions
     const y1 = photo.Y_LANDMARK_1;
@@ -178,17 +213,8 @@ window.applyDynamicCrop = function(img) {
     const centerY = (y1 + y2) / 2;
     const centerX = x;
 
-    const cropTop = centerY - (cropHeight / 2);
-    const cropLeft = centerX - (cropWidth / 2);
-
-    const scale = targetWidth / cropWidth;
-
-    img.style.width = (naturalWidth * scale) + 'px';
-    img.style.height = (naturalHeight * scale) + 'px';
-    img.style.top = (-cropTop * scale) + 'px';
-    img.style.left = (-cropLeft * scale) + 'px';
-    img.style.position = 'absolute';
+    img.style.setProperty('--photo-width', `${(naturalWidth / cropWidth) * 100}%`);
+    img.style.setProperty('--photo-left', `${-((centerX - cropWidth / 2) / cropWidth) * 100}%`);
+    img.style.setProperty('--photo-top', `${-((centerY - cropHeight / 2) / cropHeight) * 100}%`);
     img.style.display = 'block';
-    img.style.maxWidth = 'none';
-    img.style.maxHeight = 'none';
 };

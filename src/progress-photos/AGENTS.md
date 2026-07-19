@@ -10,6 +10,16 @@ distances.
 The width of the photo to display will be whatever width meets the poses aspect ratio requirements.
 The origin of the crop will have a Y value that is the midpoint between the two y-landmarks, and an X value equal to the x-Landmark.
 
+### Ordering
+
+Photos should be ordered by angle:
+
+- 90° Right
+- 45° Right
+- Front
+- 45° Left
+- 90° Left
+
 ## Persistence
 
 ### PROGRESS_PHOTO
