@@ -2,6 +2,7 @@ import {ProgressPhoto, Pose, Angle, ProgressPhotoSettings} from '../../../shared
 import {Dropdown} from '../../components/dropdown/dropdown.js';
 import {initSlider, updateSliderPosition} from '../../components/slider/slider.js';
 import {computeCropRect} from '../../utils/crop.js';
+import {snapToSlider, applySliderConfig} from '../../../shared/constants/photo.js';
 
 let poseDropdown: Dropdown | null = null;
 
@@ -119,17 +120,17 @@ function renderDashboard(): void {
         ? (currentPose?.collectionSize || settings.size || 150)
         : (currentPose?.singleSize || settings.size || 150);
 
-    currentSize = Math.round(currentSize / 25) * 25;
+    currentSize = snapToSlider('size', currentSize);
     sizeSliderEl.value = currentSize.toString();
     sizeValueEl.textContent = `${currentSize}px`;
 
     let currentCrop = currentPose?.croppingPercent || settings.crop || 50;
-    currentCrop = Math.round(currentCrop / 10) * 10;
+    currentCrop = snapToSlider('croppingPercent', currentCrop);
     cropSliderEl.value = currentCrop.toString();
     cropValueEl.textContent = `${currentCrop}%`;
 
     let currentAspect = currentPose?.aspectRatio || settings.aspect || 1.0;
-    currentAspect = Math.round(currentAspect * 10) / 10;
+    currentAspect = snapToSlider('aspectRatio', currentAspect);
     aspectSliderEl.value = currentAspect.toString();
     aspectValueEl.textContent = currentAspect.toString();
     [sizeSliderEl, cropSliderEl, aspectSliderEl].forEach(updateSliderPosition);
@@ -153,6 +154,7 @@ function renderDashboard(): void {
     }
     // Initial render of the grid
     updatePhotoGrid(poseIdToLoad || '', sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);
+    syncOffsetSliders();
     renderColumnPicker(columnPickerDropdownEl, poseIdToLoad || '', sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);
 
     // Ensure initial styles are applied (in case they differ from defaults)
@@ -174,7 +176,11 @@ function setupListeners(
 ): void {
     poseDropdown = new Dropdown(poseSelectBtnEl, poseSelectDropdownEl);
     new Dropdown(columnToggleBtnEl, columnPickerDropdownEl);
+    applySliderConfig(sizeSliderEl, 'size');
+    applySliderConfig(cropSliderEl, 'croppingPercent');
+    applySliderConfig(aspectSliderEl, 'aspectRatio');
     [sizeSliderEl, cropSliderEl, aspectSliderEl].forEach(initSlider);
+    setupOffsetSliders();
 
     sizeSliderEl.addEventListener('input', (e) => {
         const newSize = (e.target as HTMLInputElement).value;
@@ -451,6 +457,69 @@ function refreshPhotoStyles(customSize: string, customCrop: string, customAspect
     });
 }
 
+type OffsetField = 'verticalOffset' | 'horizontalOffset';
+const OFFSET_SLIDERS: {field: OffsetField, sliderId: string, valueId: string}[] = [
+    {field: 'verticalOffset', sliderId: 'vertical-offset-slider', valueId: 'vertical-offset-value'},
+    {field: 'horizontalOffset', sliderId: 'horizontal-offset-slider', valueId: 'horizontal-offset-value'}
+];
+
+function getCurrentPose(): Pose | undefined {
+    const poseId = parseInt(currentPoseId || '', 10);
+    return allPoses.find(p => p.poseId === poseId);
+}
+
+function syncOffsetSliders(): void {
+    const pose = getCurrentPose();
+    OFFSET_SLIDERS.forEach(({field, sliderId, valueId}) => {
+        const slider = document.getElementById(sliderId) as HTMLInputElement | null;
+        const valueEl = document.getElementById(valueId);
+        if (!slider) return;
+        const value = snapToSlider(field, pose?.[field] ?? 0);
+        slider.value = value.toString();
+        if (valueEl) valueEl.textContent = `${value}%`;
+        updateSliderPosition(slider);
+    });
+}
+
+function applyOffsetToPhotos(field: OffsetField, value: number): void {
+    document.querySelectorAll('img.progress-photo').forEach(el => {
+        const img = el as HTMLImageElement;
+        if (!img.dataset.poseSettings) return;
+        const poseSettings = JSON.parse(img.dataset.poseSettings);
+        poseSettings[field] = value;
+        img.dataset.poseSettings = JSON.stringify(poseSettings);
+        if (img.complete && img.naturalWidth > 0) {
+            window.applyDynamicCrop(img);
+        }
+    });
+}
+
+function setupOffsetSliders(): void {
+    OFFSET_SLIDERS.forEach(({field, sliderId, valueId}) => {
+        const slider = document.getElementById(sliderId) as HTMLInputElement | null;
+        const valueEl = document.getElementById(valueId);
+        if (!slider) return;
+        applySliderConfig(slider, field);
+        initSlider(slider);
+
+        slider.addEventListener('input', () => {
+            const value = parseInt(slider.value, 10);
+            if (valueEl) valueEl.textContent = `${value}%`;
+            const pose = getCurrentPose();
+            if (pose) pose[field] = value;
+            applyOffsetToPhotos(field, value);
+        });
+
+        slider.addEventListener('change', () => {
+            const value = parseInt(slider.value, 10);
+            const pose = getCurrentPose();
+            if (!pose) return;
+            pose[field] = value;
+            window.api.updatePoseSettings(pose.poseId, {[field]: value});
+        });
+    });
+}
+
 window.applyDynamicCrop = function (img: HTMLImageElement): void {
     if (!img.dataset.photo || !img.dataset.poseSettings) {
         img.style.display = 'block';
@@ -554,6 +623,7 @@ function renderPosePicker(
             }
 
             updatePhotoGrid(newPoseId, sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);
+            syncOffsetSliders();
             settings.default_pose = newPoseId;
             window.api.updateSetting('progress_photo', 'default_pose', newPoseId);
             renderColumnPicker(columnPickerDropdownEl, newPoseId, sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);

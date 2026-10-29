@@ -2,6 +2,7 @@ import {ProgressPhoto, Pose, LandmarkKey} from '../../../shared/types/index.js';
 import {Dropdown} from '../../components/dropdown/dropdown.js';
 import {initSlider, updateSliderPosition} from '../../components/slider/slider.js';
 import {computeCropRect, CropSettings} from '../../utils/crop.js';
+import {snapToSlider, applySliderConfig} from '../../../shared/constants/photo.js';
 
 let poseDropdown: Dropdown | null = null;
 let dateDropdown: Dropdown | null = null;
@@ -192,10 +193,10 @@ type PoseNumberField = 'croppingPercent' | 'aspectRatio' | 'verticalOffset' | 'h
 
 // Defaults and rounding (crop/aspect match the Progress Photos sliders); offsets default to 0
 const NUMBER_FIELDS: Record<PoseNumberField, {normalize: (v: number | undefined) => number, suffix: boolean}> = {
-    croppingPercent: {normalize: v => Math.round((v || 50) / 10) * 10, suffix: true},
-    aspectRatio: {normalize: v => Math.round((v || 1.0) * 10) / 10, suffix: false},
-    verticalOffset: {normalize: v => Math.round((v ?? 0) / 5) * 5, suffix: true},
-    horizontalOffset: {normalize: v => Math.round((v ?? 0) / 5) * 5, suffix: true}
+    croppingPercent: {normalize: v => snapToSlider('croppingPercent', v || 50), suffix: true},
+    aspectRatio: {normalize: v => snapToSlider('aspectRatio', v || 1.0), suffix: false},
+    verticalOffset: {normalize: v => snapToSlider('verticalOffset', v ?? 0), suffix: true},
+    horizontalOffset: {normalize: v => snapToSlider('horizontalOffset', v ?? 0), suffix: true}
 };
 
 function getNumberInputs(): HTMLInputElement[] {
@@ -218,6 +219,7 @@ function setupSidebar(): void {
     });
     getNumberInputs().forEach(input => {
         const field = input.dataset.poseNumber as PoseNumberField;
+        applySliderConfig(input, field);
         initSlider(input);
         // Live preview of the crop rectangle while dragging
         input.addEventListener('input', () => {

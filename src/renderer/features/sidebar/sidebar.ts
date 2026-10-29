@@ -1,5 +1,5 @@
-import { loadProgressPhotos } from '../progress-photos/progress-photos.js';
-import { loadPhotoEditor } from '../photo-editor/photo-editor.js';
+import {loadProgressPhotos} from '../progress-photos/progress-photos.js';
+import {loadPhotoEditor} from '../photo-editor/photo-editor.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.createElement('div');
@@ -7,12 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
     sidebar.className = 'sidebar';
 
     const icons = [
-        { name: 'Progress Photos', icon: 'features/sidebar/assets/camera.svg', id: 'dash-photos', isSvg: true },
-        { name: 'Photo Editor', icon: '🖼️', id: 'dash-photo-editor' },
-        { name: 'Dashboard', icon: '📊', id: 'dash-main' },
-        { name: 'Analytics', icon: '📈', id: 'dash-analytics' },
-        { name: 'Users', icon: '👥', id: 'dash-users' },
-        { name: 'Settings', icon: '⚙️', id: 'dash-settings' }
+        {name: 'Progress Photos', icon: 'features/sidebar/assets/camera.svg', id: 'dash-photos', isSvg: true},
+        {name: 'Photo Editor', icon: 'features/sidebar/assets/photo-editor.svg', id: 'dash-photo-editor', isSvg: true},
+        {name: 'Photo Upload', icon: 'features/sidebar/assets/photo-upload.svg', id: 'dash-photo-upload', isSvg: true},
+        {name: 'Analytics', icon: '📈', id: 'dash-analytics'},
+        {name: 'Users', icon: '👥', id: 'dash-users'},
+        {name: 'Settings', icon: '⚙️', id: 'dash-settings'}
     ];
 
     icons.forEach(item => {
@@ -45,13 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function switchDashboard(id: string) {
         const welcomeScreen = document.getElementById('welcome-screen');
         const progressDashboard = document.getElementById('progress-photo-dashboard');
-        
+
         // Hide all dashboard containers
         if (welcomeScreen) welcomeScreen.style.display = 'none';
         if (progressDashboard) progressDashboard.style.display = 'none';
         const photoEditorDashboard = document.getElementById('photo-editor-dashboard');
         if (photoEditorDashboard) photoEditorDashboard.style.display = 'none';
-        
+
         // Remove any dynamically added content from other dashboards
         const temps = document.querySelectorAll('.temp-dashboard');
         temps.forEach(t => t.remove());

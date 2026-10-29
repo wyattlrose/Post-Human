@@ -6,7 +6,7 @@ export const registerPoseIpc = () => {
     ipcMain.handle('get-progress-poses', async () => {
         try {
             const rows = db.prepare(`
-                SELECT pose_id, pose_name, cropping_percent, aspect_ratio, vertical_offset, horizontal_offset, collection_size, single_size, y_landmark_1, y_landmark_2, x_landmark
+                SELECT pose_id, pose_name, cropping_percent, aspect_ratio, vertical_offset AS vertical_offset, horizontal_offset AS horizontal_offset, collection_size, single_size, y_landmark_1, y_landmark_2, x_landmark
                 FROM PROGRESS_POSE 
                 ORDER BY pose_name ASC
             `).all();
