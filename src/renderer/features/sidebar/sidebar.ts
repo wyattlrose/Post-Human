@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sidebar.className = 'sidebar';
 
     const icons = [
-        { name: 'Progress Photos', icon: 'src/sidebar/assets/camera.svg', id: 'dash-photos', isSvg: true },
+        { name: 'Progress Photos', icon: 'features/sidebar/assets/camera.svg', id: 'dash-photos', isSvg: true },
         { name: 'Photo Editor', icon: '🖼️', id: 'dash-photo-editor' },
         { name: 'Dashboard', icon: '📊', id: 'dash-main' },
         { name: 'Analytics', icon: '📈', id: 'dash-analytics' },

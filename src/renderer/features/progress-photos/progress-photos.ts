@@ -1,7 +1,7 @@
-import {ProgressPhoto, Pose, Angle, ProgressPhotoSettings} from '../types/index.js';
-import {Dropdown} from '../components/dropdown/dropdown.js';
-import {initSlider, updateSliderPosition} from '../components/slider/slider.js';
-import {computeCropRect} from '../utils/crop.js';
+import {ProgressPhoto, Pose, Angle, ProgressPhotoSettings} from '../../../shared/types/index.js';
+import {Dropdown} from '../../components/dropdown/dropdown.js';
+import {initSlider, updateSliderPosition} from '../../components/slider/slider.js';
+import {computeCropRect} from '../../utils/crop.js';
 
 let poseDropdown: Dropdown | null = null;
 

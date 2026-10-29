@@ -1,4 +1,4 @@
-import { ProgressPhoto } from '../../types/index.js';
+import { ProgressPhoto } from '../types/index.js';
 
 export class ProgressPhotoDTO implements ProgressPhoto {
     photoId: number;

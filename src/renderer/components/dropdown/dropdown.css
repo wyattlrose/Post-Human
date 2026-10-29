@@ -65,15 +65,3 @@
     transform: translateY(-50%);
     pointer-events: none;
 }
-
-/* Outward fillet: curves the open button's bottom-left edge into the menu below */
-.interactable-selector-btn.active::before {
-    content: '';
-    position: absolute;
-    left: -0.5rem;
-    bottom: 0;
-    width: 0.5rem;
-    height: 0.5rem;
-    background: radial-gradient(circle at 0 0, transparent 0.5rem, var(--selector-bg) calc(0.5rem + 0.5px));
-    pointer-events: none;
-}

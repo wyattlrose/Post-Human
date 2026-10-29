@@ -2,10 +2,10 @@
   "name": "health",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/main.js",
+  "main": "dist/src/main_process/main.js",
   "scripts": {
     "start": "npm run build && electron .",
-    "build": "tsc && (mv dist/preload.js dist/preload.cjs || true)",
+    "build": "tsc && (mv dist/src/main_process/preload.js dist/src/main_process/preload.cjs || true)",
     "db": "ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron agent-scripts/db-shell.js"
   },
   "keywords": [],

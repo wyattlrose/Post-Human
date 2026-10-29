@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Post-Human</title>
-    <link rel="stylesheet" href="src/css/global.css">
-    <link rel="stylesheet" href="src/components/dropdown/dropdown.css">
-    <link rel="stylesheet" href="src/components/slider/slider.css">
-    <link rel="stylesheet" href="src/components/checkbox/checkbox.css">
-    <link rel="stylesheet" href="src/sidebar/sidebar.css">
-    <link rel="stylesheet" href="src/progress-photos/progress-photos.css">
-    <link rel="stylesheet" href="src/photo-editor/photo-editor.css">
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="components/dropdown/dropdown.css">
+    <link rel="stylesheet" href="components/slider/slider.css">
+    <link rel="stylesheet" href="components/text-input/text-input.css">
+    <link rel="stylesheet" href="components/checkbox/checkbox.css">
+    <link rel="stylesheet" href="features/sidebar/sidebar.css">
+    <link rel="stylesheet" href="features/progress-photos/progress-photos.css">
+    <link rel="stylesheet" href="features/photo-editor/photo-editor.css">
 </head>
 <body>
     <div id="main-content">
@@ -96,15 +97,15 @@
             <div id="editor-sidebar" class="editor-sidebar" style="display: none;">
                 <div class="editor-sidebar-item">
                     <label for="editor-y-landmark-1-label" class="interactable-label">Y Landmark 1:</label>
-                    <input type="text" id="editor-y-landmark-1-label" class="editor-text-input" data-pose-field="yLandmark1Label">
+                    <input type="text" id="editor-y-landmark-1-label" class="text-input" data-pose-field="yLandmark1Label">
                 </div>
                 <div class="editor-sidebar-item">
                     <label for="editor-y-landmark-2-label" class="interactable-label">Y Landmark 2:</label>
-                    <input type="text" id="editor-y-landmark-2-label" class="editor-text-input" data-pose-field="yLandmark2Label">
+                    <input type="text" id="editor-y-landmark-2-label" class="text-input" data-pose-field="yLandmark2Label">
                 </div>
                 <div class="editor-sidebar-item">
                     <label for="editor-x-landmark-label" class="interactable-label">X Landmark:</label>
-                    <input type="text" id="editor-x-landmark-label" class="editor-text-input" data-pose-field="xLandmarkLabel">
+                    <input type="text" id="editor-x-landmark-label" class="text-input" data-pose-field="xLandmarkLabel">
                 </div>
                 <div class="editor-sidebar-item">
                     <label for="editor-cropping-percent" class="interactable-label">Cropping Percent:</label>
@@ -181,6 +182,6 @@
         </div>
     </template>
 
-    <script type="module" src="dist/src/sidebar/sidebar.js"></script>
+    <script type="module" src="../../dist/src/renderer/features/sidebar/sidebar.js"></script>
 </body>
 </html>

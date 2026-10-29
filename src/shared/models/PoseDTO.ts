@@ -1,4 +1,4 @@
-import { Pose, PoseAngle } from '../../types/index.js';
+import { Pose, PoseAngle } from '../types/index.js';
 
 export class PoseDTO implements Pose {
     poseId: number;
