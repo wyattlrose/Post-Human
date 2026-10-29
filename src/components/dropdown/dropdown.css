@@ -49,3 +49,19 @@
     background-color: var(--selector-hover); /* Slightly brighter than selector-bg (#1c2b4a) */
     border-radius: 0.25rem;
 }
+
+/* Arrow sits at a fixed spot from the right edge, regardless of label length */
+.interactable-selector-btn {
+    position: relative;
+    padding-right: 2rem;
+    text-align: left;
+}
+
+.interactable-selector-btn::after {
+    content: '▾';
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}

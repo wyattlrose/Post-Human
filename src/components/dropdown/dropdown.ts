@@ -42,7 +42,7 @@ export class Dropdown {
     }
 
     setLabel(text: string): void {
-        this.button.textContent = `${text} ▾`;
+        this.button.textContent = text;
     }
 
     private static addDocumentListener(): void {

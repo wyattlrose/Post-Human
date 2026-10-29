@@ -108,7 +108,7 @@ function renderDashboard(): void {
 
     // Update button text
     if (currentPose) {
-        poseSelectBtnEl.textContent = `${currentPose.poseName} ▾`;
+        poseSelectBtnEl.textContent = `${currentPose.poseName}`;
     }
 
     renderPosePicker(poseSelectDropdownEl, poseSelectBtnEl, sizeSliderEl, sizeValueEl, cropSliderEl, cropValueEl, aspectSliderEl, aspectValueEl, columnPickerDropdownEl);
@@ -537,7 +537,7 @@ function renderPosePicker(
                 poseDropdown.setLabel(pose.poseName);
                 poseDropdown.close();
             } else {
-                btn.textContent = `${pose.poseName} ▾`;
+                btn.textContent = `${pose.poseName}`;
             }
 
             // Update sliders based on the new pose
