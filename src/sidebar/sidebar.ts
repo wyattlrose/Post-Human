@@ -1,4 +1,5 @@
 import { loadProgressPhotos } from '../progress-photos/progress-photos.js';
+import { loadPhotoEditor } from '../photo-editor/photo-editor.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.createElement('div');
@@ -7,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const icons = [
         { name: 'Progress Photos', icon: 'src/sidebar/assets/camera.svg', id: 'dash-photos', isSvg: true },
+        { name: 'Photo Editor', icon: '🖼️', id: 'dash-photo-editor' },
         { name: 'Dashboard', icon: '📊', id: 'dash-main' },
         { name: 'Analytics', icon: '📈', id: 'dash-analytics' },
         { name: 'Users', icon: '👥', id: 'dash-users' },
@@ -47,6 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Hide all dashboard containers
         if (welcomeScreen) welcomeScreen.style.display = 'none';
         if (progressDashboard) progressDashboard.style.display = 'none';
+        const photoEditorDashboard = document.getElementById('photo-editor-dashboard');
+        if (photoEditorDashboard) photoEditorDashboard.style.display = 'none';
         
         // Remove any dynamically added content from other dashboards
         const temps = document.querySelectorAll('.temp-dashboard');
@@ -54,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (id === 'dash-photos') {
             loadProgressPhotos();
+        } else if (id === 'dash-photo-editor') {
+            loadPhotoEditor();
         } else {
             const mainContent = document.getElementById('main-content');
             if (mainContent) {

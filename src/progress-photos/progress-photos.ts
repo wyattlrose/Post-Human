@@ -1,25 +1,25 @@
-import {ProgressPhoto, Pose, Settings} from '../types/index.js';
+import {ProgressPhoto, Pose, Angle, ProgressPhotoSettings} from '../types/index.js';
 import {Dropdown} from '../components/dropdown/dropdown.js';
 import {initSlider, updateSliderPosition} from '../components/slider/slider.js';
+import {computeCropRect} from '../utils/crop.js';
 
 let poseDropdown: Dropdown | null = null;
 
 let allPhotos: ProgressPhoto[] = [];
 let allPoses: Pose[] = [];
-let settings: Settings = {};
+let allAngles: Angle[] = [];
+let settings: ProgressPhotoSettings = {};
 let currentPoseId: string | null = null;
 
 type ViewMode = 'date-rows' | 'angle-rows';
 let currentViewMode: ViewMode = 'date-rows';
 let initialized = false;
 
-const ANGLE_ORDER = [
-    '90° Right',
-    '45° Right',
-    'Front',
-    '45° Left',
-    '90° Left'
-];
+// Enabled angle names for a pose, sorted by their configured order
+function getPoseAngles(poseId: string): string[] {
+    const pose = allPoses.find(p => p.poseId === parseInt(poseId, 10));
+    return pose ? pose.angles.map(a => a.angle) : [];
+}
 
 export async function loadProgressPhotos(): Promise<void> {
     const dashboard = document.getElementById('progress-photo-dashboard');
@@ -36,11 +36,16 @@ export async function loadProgressPhotos(): Promise<void> {
 
     console.log('Loading progress photos...');
     try {
-        [allPhotos, allPoses, settings] = await Promise.all([
+        const [photos, poses, angles, appSettings] = await Promise.all([
             window.api.getProgressPhotos(),
             window.api.getProgressPoses(),
+            window.api.getProgressAngles(),
             window.api.getSettings()
         ]);
+        allPhotos = photos;
+        allPoses = poses;
+        allAngles = angles;
+        settings = appSettings?.progress_photo ?? {};
         console.log(`Loaded ${allPhotos?.length} photos and ${allPoses?.length} poses.`);
 
         if (!allPhotos || allPhotos.length === 0) {
@@ -79,11 +84,11 @@ function renderDashboard(): void {
     const columnPickerDropdownEl = document.getElementById('column-picker-dropdown') as HTMLDivElement;
 
     // Set view mode
-    currentViewMode = (settings.progress_photo_view_mode as ViewMode) || 'date-rows';
+    currentViewMode = (settings.view_mode as ViewMode) || 'date-rows';
     viewToggleEl.textContent = currentViewMode === 'date-rows' ? 'Vertical' : 'Horizontal';
 
     // Set default pose from settings
-    let defaultPoseId = settings.progress_photo_default_pose;
+    let defaultPoseId = settings.default_pose;
 
     let poseIdToLoad = '';
 
@@ -94,7 +99,8 @@ function renderDashboard(): void {
         // Fallback to the first pose if none set or if set one no longer exists
         poseIdToLoad = allPoses[0].poseId.toString();
         // Update settings with this first pose
-        window.api.updateSetting('progress_photo_default_pose', poseIdToLoad);
+        settings.default_pose = poseIdToLoad;
+        window.api.updateSetting('progress_photo', 'default_pose', poseIdToLoad);
     }
 
     // Set slider values based on the SELECTED pose
@@ -110,19 +116,19 @@ function renderDashboard(): void {
     // TODO: "singleSize" represents the size of the photos when rendered in their horizontal view (angle-rows mode).
     // It should be renamed to something more descriptive in the future.
     let currentSize = currentViewMode === 'date-rows'
-        ? (currentPose?.collectionSize || settings.progress_photo_size || 150)
-        : (currentPose?.singleSize || settings.progress_photo_size || 150);
+        ? (currentPose?.collectionSize || settings.size || 150)
+        : (currentPose?.singleSize || settings.size || 150);
 
     currentSize = Math.round(currentSize / 25) * 25;
     sizeSliderEl.value = currentSize.toString();
     sizeValueEl.textContent = `${currentSize}px`;
 
-    let currentCrop = currentPose?.croppingPercent || settings.progress_photo_crop || 50;
+    let currentCrop = currentPose?.croppingPercent || settings.crop || 50;
     currentCrop = Math.round(currentCrop / 10) * 10;
     cropSliderEl.value = currentCrop.toString();
     cropValueEl.textContent = `${currentCrop}%`;
 
-    let currentAspect = currentPose?.aspectRatio || settings.progress_photo_aspect || 1.0;
+    let currentAspect = currentPose?.aspectRatio || settings.aspect || 1.0;
     currentAspect = Math.round(currentAspect * 10) / 10;
     aspectSliderEl.value = currentAspect.toString();
     aspectValueEl.textContent = currentAspect.toString();
@@ -239,7 +245,8 @@ function setupListeners(
         const lastPoseId = currentPoseId || '';
         currentPoseId = null;
         updatePhotoGrid(lastPoseId, sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);
-        window.api.updateSetting('progress_photo_view_mode', currentViewMode);
+        settings.view_mode = currentViewMode;
+        window.api.updateSetting('progress_photo', 'view_mode', currentViewMode);
         renderColumnPicker(columnPickerDropdownEl, lastPoseId, sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);
     });
 
@@ -322,14 +329,8 @@ function updatePhotoGrid(poseId: string, customSize: string, customCrop: string,
 
     const headerTpl = document.getElementById('tpl-header-item') as HTMLTemplateElement;
 
-    let columns = currentViewMode === 'date-rows' ? ANGLE_ORDER : sortedDates;
-
-    // Filter columns/rows based on settings (we only filter by ANGLE now)
-    const hiddenAngles = settings.progress_photo_hidden_angles || [];
-
-    if (currentViewMode === 'date-rows') {
-        columns = columns.filter(col => !hiddenAngles.includes(col));
-    }
+    const poseAngles = getPoseAngles(poseId);
+    const columns = currentViewMode === 'date-rows' ? poseAngles : sortedDates;
 
     for (const colValue of columns) {
         const item = (headerTpl.content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLElement;
@@ -346,10 +347,7 @@ function updatePhotoGrid(poseId: string, customSize: string, customCrop: string,
     const itemTpl = document.getElementById('tpl-photo-item') as HTMLTemplateElement;
     const blankTpl = document.getElementById('tpl-blank-item') as HTMLTemplateElement;
 
-    let rows = currentViewMode === 'date-rows' ? sortedDates : ANGLE_ORDER;
-    if (currentViewMode === 'angle-rows') {
-        rows = rows.filter(row => !hiddenAngles.includes(row));
-    }
+    const rows = currentViewMode === 'date-rows' ? sortedDates : poseAngles;
 
     for (const rowValue of rows) {
         const row = (rowTpl.content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLElement;
@@ -467,56 +465,44 @@ window.applyDynamicCrop = function (img: HTMLImageElement): void {
         return;
     }
 
-    const naturalWidth = img.naturalWidth;
-    const cropPercent = poseSettings.croppingPercent || 50;
-    const aspectRatio = poseSettings.aspectRatio || 1.0;
+    const crop = computeCropRect(photo, poseSettings);
 
-    // Landmarks are percentages (0-1) of original image dimensions
-    const y1 = photo.yLandmark1;
-    const y2 = photo.yLandmark2;
-    const x = photo.xLandmark;
-
-    const yDist = Math.abs(y2 - y1);
-    const margin = yDist * (cropPercent / 100);
-
-    const cropHeight = yDist + (2 * margin);
-    const cropWidth = cropHeight * aspectRatio;
-
-    const centerY = (y1 + y2) / 2;
-    const centerX = x;
-
-    img.style.setProperty('--photo-width', `${(naturalWidth / cropWidth) * 100}%`);
-    img.style.setProperty('--photo-left', `${-((centerX - cropWidth / 2) / cropWidth) * 100}%`);
-    img.style.setProperty('--photo-top', `${-((centerY - cropHeight / 2) / cropHeight) * 100}%`);
+    img.style.setProperty('--photo-width', `${(img.naturalWidth / crop.width) * 100}%`);
+    img.style.setProperty('--photo-left', `${-(crop.left / crop.width) * 100}%`);
+    img.style.setProperty('--photo-top', `${-(crop.top / crop.height) * 100}%`);
     img.style.display = 'block';
 };
 
 function renderColumnPicker(container: HTMLElement, poseId: string, size: string, crop: string, aspect: string): void {
-    const allPossibleAngles = ANGLE_ORDER;
-    const hiddenSettingKey = 'progress_photo_hidden_angles';
-    const hiddenAngles = (settings[hiddenSettingKey] || []) as string[];
-
+    const pose = allPoses.find(p => p.poseId === parseInt(poseId, 10));
     container.innerHTML = '';
+    if (!pose) return;
 
-    allPossibleAngles.forEach(angle => {
+    // Enabled angles first (in their order), then the remaining disabled ones
+    const enabledIds = pose.angles.map(a => a.angleId);
+    const orderedAngles = [
+        ...pose.angles,
+        ...allAngles.filter(a => !enabledIds.includes(a.angleId))
+    ];
+
+    orderedAngles.forEach(({angleId, angle}) => {
         const item = document.createElement('label');
         item.className = 'interactable-dropdown-item';
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.checked = !hiddenAngles.includes(angle);
+        checkbox.checked = enabledIds.includes(angleId);
 
         checkbox.addEventListener('change', () => {
-            let currentHidden = (settings[hiddenSettingKey] || []) as string[];
             if (checkbox.checked) {
-                currentHidden = currentHidden.filter(h => h !== angle);
-            } else {
-                if (!currentHidden.includes(angle)) {
-                    currentHidden.push(angle);
+                if (!pose.angles.some(a => a.angleId === angleId)) {
+                    const nextOrder = Math.max(0, ...pose.angles.map(a => a.order)) + 1;
+                    pose.angles.push({angleId, angle, order: nextOrder});
                 }
+            } else {
+                pose.angles = pose.angles.filter(a => a.angleId !== angleId);
             }
-            settings[hiddenSettingKey] = currentHidden;
-            window.api.updateSetting(hiddenSettingKey, currentHidden);
+            window.api.setPoseAngleEnabled(pose.poseId, angleId, checkbox.checked);
 
             // Force re-render of the grid
             currentPoseId = null;
@@ -568,7 +554,8 @@ function renderPosePicker(
             }
 
             updatePhotoGrid(newPoseId, sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);
-            window.api.updateSetting('progress_photo_default_pose', newPoseId);
+            settings.default_pose = newPoseId;
+            window.api.updateSetting('progress_photo', 'default_pose', newPoseId);
             renderColumnPicker(columnPickerDropdownEl, newPoseId, sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);
         });
         container.appendChild(item);

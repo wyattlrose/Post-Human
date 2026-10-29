@@ -1,0 +1,192 @@
+.editor-thumbnail-strip {
+    display: flex;
+    flex-direction: row;
+    gap: var(--grid-gap);
+    overflow-x: auto;
+    padding: 0.625rem 0;
+}
+
+.editor-thumbnail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    cursor: pointer;
+}
+
+.editor-thumbnail.selected .photo-container {
+    outline: 2px solid var(--text-secondary);
+}
+
+#photo-editor-dashboard {
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+#photo-editor-dashboard > h1,
+#photo-editor-dashboard > .filter-container,
+.editor-thumbnail-strip {
+    flex: 0 0 auto;
+}
+
+.editor-canvas {
+    flex: 1 1 auto;
+    min-height: 0;
+    box-sizing: border-box;
+    padding: 0.625rem 0;
+}
+
+.editor-canvas {
+    --landmark-color: #4dabf7;
+    --landmark-idle-opacity: 0.35;
+}
+
+.editor-stage {
+    position: absolute;
+    inset: 0;
+    user-select: none;
+}
+
+.editor-image {
+    position: absolute;
+    display: block;
+    max-width: none;
+    max-height: none;
+}
+
+.editor-landmark-line.horizontal {
+    position: absolute;
+    height: 3px;
+    margin-top: -1px;
+    background-color: var(--landmark-color);
+    opacity: var(--landmark-idle-opacity);
+    transition: opacity 0.15s, box-shadow 0.15s;
+}
+
+.editor-landmark-line.vertical {
+    position: absolute;
+    width: 3px;
+    margin-left: -1px;
+    background-color: var(--landmark-color);
+    opacity: var(--landmark-idle-opacity);
+    transition: opacity 0.15s, box-shadow 0.15s;
+}
+
+/* Wider invisible hit area so the thin line is easy to hover */
+.editor-landmark-line::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+}
+
+.editor-landmark-line.horizontal { cursor: ns-resize; }
+.editor-landmark-line.vertical { cursor: ew-resize; }
+
+.editor-landmark-line.hover,
+.editor-landmark-line.dragging {
+    opacity: 1;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+}
+
+.editor-landmark {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border-radius: 50%;
+    background: var(--landmark-color);
+    /* Hidden until its line is hovered */
+    opacity: 0;
+    pointer-events: none;
+    cursor: grab;
+    touch-action: none;
+    z-index: 1;
+    transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.editor-landmark.hover,
+.editor-landmark.dragging {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1.5);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 1px 6px rgba(0, 0, 0, 0.7);
+}
+
+.editor-landmark[data-landmark="xLandmark"] {
+    cursor: ew-resize;
+}
+
+.editor-landmark[data-landmark^="yLandmark"] {
+    cursor: ns-resize;
+}
+
+.editor-thumbnail-label {
+    margin-top: 0.25rem;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.editor-canvas {
+    overflow: hidden;
+    position: relative;
+}
+
+.editor-canvas {
+    cursor: grab;
+}
+
+.editor-canvas.panning {
+    cursor: grabbing;
+}
+
+.editor-canvas {
+    width: 50%;
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0.35);
+    border-radius: 0.75rem;
+}
+
+.editor-workspace {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: 0.625rem;
+}
+
+.editor-sidebar {
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 0 0 16rem;
+    min-width: 0;
+}
+
+.editor-sidebar-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.editor-text-input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.375rem 0.5rem;
+    font: inherit;
+    color: inherit;
+    background-color: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--text-secondary);
+    border-radius: 0.375rem;
+}
+
+.editor-crop-rect {
+    position: absolute;
+    box-sizing: border-box;
+    border: 3px solid #fff;
+    /* Dims everything outside the crop; inner shadow keeps the border visible on light photos */
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45), 0 0 6px rgba(0, 0, 0, 0.7), inset 0 0 6px rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+}

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="src/components/checkbox/checkbox.css">
     <link rel="stylesheet" href="src/sidebar/sidebar.css">
     <link rel="stylesheet" href="src/progress-photos/progress-photos.css">
+    <link rel="stylesheet" href="src/photo-editor/photo-editor.css">
 </head>
 <body>
     <div id="main-content">
@@ -63,6 +64,79 @@
             <div id="photo-grid-header" class="photo-grid-header"></div>
             <div id="photo-grid-root" class="photo-grid-container"></div>
         </div>
+
+        <div id="photo-editor-dashboard" style="display: none;">
+            <h1>Photo Editor</h1>
+            <div class="filter-container">
+                <div class="filter-item interactable-dropdown-container">
+                    <label class="interactable-label">Pose:</label>
+                    <button id="editor-pose-select-btn" class="filter-button interactable-button interactable-selector-btn">Select Pose ▾</button>
+                    <div id="editor-pose-select-dropdown" class="interactable-dropdown-menu" style="display:none;"></div>
+                </div>
+                <div class="filter-item interactable-dropdown-container">
+                    <label class="interactable-label">Date:</label>
+                    <button id="editor-date-select-btn" class="filter-button interactable-button interactable-selector-btn">Select Date ▾</button>
+                    <div id="editor-date-select-dropdown" class="interactable-dropdown-menu" style="display:none;"></div>
+                </div>
+            </div>
+            <div id="editor-thumbnail-strip" class="editor-thumbnail-strip"></div>
+            <div class="editor-workspace">
+            <div id="editor-canvas" class="editor-canvas" style="display: none;">
+                <div class="editor-stage">
+                    <img id="editor-image" class="editor-image" src="" alt="" draggable="false">
+                    <div class="editor-landmark-line horizontal" data-landmark="yLandmark1"></div>
+                    <div class="editor-landmark-line horizontal" data-landmark="yLandmark2"></div>
+                    <div class="editor-landmark-line vertical" data-landmark="xLandmark"></div>
+                    <div id="editor-crop-rect" class="editor-crop-rect"></div>
+                    <div class="editor-landmark" data-landmark="yLandmark1" title="Y Landmark 1"></div>
+                    <div class="editor-landmark" data-landmark="yLandmark2" title="Y Landmark 2"></div>
+                    <div class="editor-landmark" data-landmark="xLandmark" title="X Landmark"></div>
+                </div>
+            </div>
+            <div id="editor-sidebar" class="editor-sidebar" style="display: none;">
+                <div class="editor-sidebar-item">
+                    <label for="editor-y-landmark-1-label" class="interactable-label">Y Landmark 1:</label>
+                    <input type="text" id="editor-y-landmark-1-label" class="editor-text-input" data-pose-field="yLandmark1Label">
+                </div>
+                <div class="editor-sidebar-item">
+                    <label for="editor-y-landmark-2-label" class="interactable-label">Y Landmark 2:</label>
+                    <input type="text" id="editor-y-landmark-2-label" class="editor-text-input" data-pose-field="yLandmark2Label">
+                </div>
+                <div class="editor-sidebar-item">
+                    <label for="editor-x-landmark-label" class="interactable-label">X Landmark:</label>
+                    <input type="text" id="editor-x-landmark-label" class="editor-text-input" data-pose-field="xLandmarkLabel">
+                </div>
+                <div class="editor-sidebar-item">
+                    <label for="editor-cropping-percent" class="interactable-label">Cropping Percent:</label>
+                    <div>
+                        <input type="range" id="editor-cropping-percent" data-pose-number="croppingPercent" min="10" max="500" step="10">
+                        <span id="editor-cropping-percent-value"></span>
+                    </div>
+                </div>
+                <div class="editor-sidebar-item">
+                    <label for="editor-aspect-ratio" class="interactable-label">Aspect Ratio:</label>
+                    <div>
+                        <input type="range" id="editor-aspect-ratio" data-pose-number="aspectRatio" min="0.1" max="2" step="0.1">
+                        <span id="editor-aspect-ratio-value"></span>
+                    </div>
+                </div>
+                <div class="editor-sidebar-item">
+                    <label for="editor-vertical-offset" class="interactable-label">Vertical Offset:</label>
+                    <div>
+                        <input type="range" id="editor-vertical-offset" data-pose-number="verticalOffset" min="-100" max="100" step="5">
+                        <span id="editor-vertical-offset-value"></span>
+                    </div>
+                </div>
+                <div class="editor-sidebar-item">
+                    <label for="editor-horizontal-offset" class="interactable-label">Horizontal Offset:</label>
+                    <div>
+                        <input type="range" id="editor-horizontal-offset" data-pose-number="horizontalOffset" min="-100" max="100" step="5">
+                        <span id="editor-horizontal-offset-value"></span>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
     </div>
 
     <!-- Templates -->
@@ -92,6 +166,18 @@
         <div class="photo-item">
             <div class="photo-container blank-placeholder">
             </div>
+        </div>
+    </template>
+
+    <template id="tpl-editor-thumbnail">
+        <div class="editor-thumbnail">
+            <div class="photo-container">
+                <img src="" alt="" class="progress-photo"
+                     onload="applyDynamicCrop(this)"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="photo-placeholder"></div>
+            </div>
+            <div class="editor-thumbnail-label"></div>
         </div>
     </template>
 
