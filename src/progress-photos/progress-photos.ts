@@ -1,5 +1,6 @@
 import {ProgressPhoto, Pose, Settings} from '../types/index.js';
 import {Dropdown} from '../components/dropdown/dropdown.js';
+import {initSlider, updateSliderPosition} from '../components/slider/slider.js';
 
 let poseDropdown: Dropdown | null = null;
 
@@ -125,6 +126,7 @@ function renderDashboard(): void {
     currentAspect = Math.round(currentAspect * 10) / 10;
     aspectSliderEl.value = currentAspect.toString();
     aspectValueEl.textContent = currentAspect.toString();
+    [sizeSliderEl, cropSliderEl, aspectSliderEl].forEach(updateSliderPosition);
 
     renderColumnPicker(columnPickerDropdownEl, poseIdToLoad || '', sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);
     if (!initialized) {
@@ -166,6 +168,7 @@ function setupListeners(
 ): void {
     poseDropdown = new Dropdown(poseSelectBtnEl, poseSelectDropdownEl);
     new Dropdown(columnToggleBtnEl, columnPickerDropdownEl);
+    [sizeSliderEl, cropSliderEl, aspectSliderEl].forEach(initSlider);
 
     sizeSliderEl.addEventListener('input', (e) => {
         const newSize = (e.target as HTMLInputElement).value;
@@ -229,6 +232,7 @@ function setupListeners(
             const newSize = currentViewMode === 'date-rows' ? (currentPose.collectionSize || 150) : (currentPose.singleSize || 150);
             sizeSliderEl.value = newSize.toString();
             sizeValueEl.textContent = `${newSize}px`;
+            updateSliderPosition(sizeSliderEl);
         }
 
         // Clear currentPoseId to force full re-render
@@ -500,7 +504,6 @@ function renderColumnPicker(container: HTMLElement, poseId: string, size: string
 
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.className = 'interactable-checkbox';
         checkbox.checked = !hiddenAngles.includes(angle);
 
         checkbox.addEventListener('change', () => {
@@ -561,6 +564,7 @@ function renderPosePicker(
                 cropValueEl.textContent = `${cropSliderEl.value}%`;
                 aspectSliderEl.value = (newPose.aspectRatio || 1.0).toString();
                 aspectValueEl.textContent = aspectSliderEl.value;
+                [sizeSliderEl, cropSliderEl, aspectSliderEl].forEach(updateSliderPosition);
             }
 
             updatePhotoGrid(newPoseId, sizeSliderEl.value, cropSliderEl.value, aspectSliderEl.value);
