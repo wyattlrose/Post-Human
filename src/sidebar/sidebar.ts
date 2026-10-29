@@ -40,15 +40,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (firstIcon) firstIcon.click();
     }, 100);
 
-    function switchDashboard(id) {
-        const mainContent = document.getElementById('main-content');
+    function switchDashboard(id: string) {
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const progressDashboard = document.getElementById('progress-photo-dashboard');
+        
+        // Hide all dashboard containers
+        if (welcomeScreen) welcomeScreen.style.display = 'none';
+        if (progressDashboard) progressDashboard.style.display = 'none';
+        
+        // Remove any dynamically added content from other dashboards
+        const temps = document.querySelectorAll('.temp-dashboard');
+        temps.forEach(t => t.remove());
+
         if (id === 'dash-photos') {
             loadProgressPhotos();
         } else {
-            mainContent.innerHTML = `
-                <h1>${id.replace('dash-', '').toUpperCase()}</h1>
-                <p>Content for ${id} dashboard.</p>
-            `;
+            const mainContent = document.getElementById('main-content');
+            if (mainContent) {
+                mainContent.insertAdjacentHTML('beforeend', `
+                    <div class="temp-dashboard">
+                        <h1>${id.replace('dash-', '').toUpperCase()}</h1>
+                        <p>Content for ${id} dashboard.</p>
+                    </div>
+                `);
+            }
         }
     }
 

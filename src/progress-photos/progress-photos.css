@@ -3,45 +3,36 @@
 }
 
 :root {
-    --grid-gap: 7px;
+    --grid-gap: 0.4375rem;
 }
 
 .photo-grid-container {
     display: flex;
     flex-direction: column;
     gap: var(--grid-gap);
+    width: max-content;
+    min-width: 100%;
 }
 
 .filter-container {
-    margin-bottom: 5px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
+    margin-bottom: 0.3125rem;
+    padding: 0.625rem;
+    background-color: var(--surface-color);
+    border: none;
+    border-radius: 0.25rem;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 20px;
+    gap: 1.25rem;
 }
 
 .filter-item {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0.625rem;
 }
 
-.filter-item label {
-    font-weight: bold;
-}
 
-.filter-item select,
-.filter-item input[type="range"] {
-    padding: 5px;
-}
-
-#size-value {
-    min-width: 50px;
-    font-family: monospace;
-}
 
 .photo-row {
     display: flex;
@@ -54,12 +45,14 @@
     margin-bottom: 0;
 }
 
-.photo-date-column {
+.grid-header-cell {
     font-weight: bold;
-    font-size: 1.1em;
-    min-width: 100px;
-    color: #333;
+    color: var(--text-primary);
     text-align: center;
+}
+
+.photo-date-column {
+    min-width: 6.25rem;
 }
 
 .photo-grid-header {
@@ -67,17 +60,18 @@
     align-items: center;
     padding: 0;
     margin-bottom: var(--grid-gap);
+    margin-top:1.25rem;
     position: sticky;
     top: 0;
     gap: var(--grid-gap);
     z-index: 10;
+    background-color: var(--bg-color);
+    width: max-content;
+    min-width: 100%;
 }
 
-.header-date-column {
-    font-weight: bold;
-    min-width: 100px;
-    color: #333;
-    text-align: center;
+.header-label-column {
+    min-width: 6.25rem;
 }
 
 .header-items {
@@ -86,10 +80,7 @@
 }
 
 .header-item {
-    width: var(--item-width, 150px);
-    text-align: center;
-    font-weight: bold;
-    color: #444;
+    width: var(--item-width, 9.375rem);
 }
 
 .photo-items {
@@ -101,27 +92,29 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: var(--item-width, 150px);
+    width: var(--item-width, 9.375rem);
 }
 
 .photo-container {
-    background-color: #f0f0f0;
+    background-color: var(--black);
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
     overflow: hidden;
-    width: var(--container-width, 150px);
-    height: var(--container-height, 150px);
+    width: var(--container-width, 9.375rem);
+    height: var(--container-height, 9.375rem);
     flex-shrink: 0;
-    border-radius: 4px;
+    border-radius: 0.25rem;
+    border: none;
 }
 
 .blank-placeholder {
-    background-color: #e0e0e0;
-    width: var(--container-width, 150px);
-    height: var(--container-height, 150px);
-    border-radius: 4px;
+    background-color: var(--surface-color);
+    width: var(--container-width, 9.375rem);
+    height: var(--container-height, 9.375rem);
+    border-radius: 0.25rem;
+    border: none;
 }
 
 .progress-photo {
@@ -141,11 +134,35 @@
     justify-content: center;
     align-items: center;
     text-align: center;
-    font-size: 0.9em;
-    color: #666;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
     display: none;
 }
 
 .photo-label {
     display: none;
+}
+
+
+
+/* Reserves width for the longest label so the button doesn't resize when its text toggles */
+#view-toggle {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#view-toggle::before,
+#view-toggle::after {
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+#view-toggle::before {
+    content: "Horizontal";
+}
+
+#view-toggle::after {
+    content: "Vertical";
 }

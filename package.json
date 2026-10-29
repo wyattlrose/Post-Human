@@ -1,15 +1,24 @@
 {
-  "name": "posthuman",
+  "name": "health",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "dist/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "npm run build && electron .",
+    "build": "tsc && (mv dist/preload.js dist/preload.cjs || true)",
+    "db": "ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron agent-scripts/db-shell.js"
   },
   "keywords": [],
   "author": "",
+  "type": "module",
   "license": "ISC",
   "dependencies": {
-    "electron": "^39.8.10"
+    "electron": "^39.8.10",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.6.12",
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
   }
 }

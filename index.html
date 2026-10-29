@@ -3,14 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <title>Post-Human</title>
+    <link rel="stylesheet" href="src/css/global.css">
+    <link rel="stylesheet" href="src/components/dropdown/dropdown.css">
     <link rel="stylesheet" href="src/sidebar/sidebar.css">
     <link rel="stylesheet" href="src/progress-photos/progress-photos.css">
 </head>
 <body>
     <div id="main-content">
-        <h1>Welcome</h1>
-        <p>Select a dashboard from the sidebar.</p>
+        <div id="welcome-screen">
+            <h1>Welcome</h1>
+            <p>Select a dashboard from the sidebar.</p>
+        </div>
+
+        <div id="progress-photo-dashboard" style="display: none;">
+            <h1>Progress Photos</h1>
+            <div class="filter-container">
+                <div class="filter-item interactable-dropdown-container">
+                    <label class="interactable-label">Pose:</label>
+                    <button id="pose-select-btn" class="filter-button interactable-button interactable-selector-btn">Select Pose ▾</button>
+                    <div id="pose-select-dropdown" class="interactable-dropdown-menu" style="display:none;">
+                        <!-- Poses will be injected here -->
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label for="size-slider" class="interactable-label">Photo Size:</label>
+                    <input type="range" id="size-slider" min="100" max="500" step="25" class="interactable-range">
+                    <span id="size-value" class="interactable-value"></span>
+                </div>
+                <div class="filter-item">
+                    <label for="crop-slider" class="interactable-label">Cropping Percent:</label>
+                    <input type="range" id="crop-slider" min="10" max="500" step="10" class="interactable-range">
+                    <span id="crop-value" class="interactable-value"></span>
+                </div>
+                <div class="filter-item">
+                    <label for="aspect-slider" class="interactable-label">Aspect Ratio:</label>
+                    <input type="range" id="aspect-slider" min="0.1" max="2" step="0.1" class="interactable-range">
+                    <span id="aspect-value" class="interactable-value"></span>
+                </div>
+                <div class="filter-item">
+                    <label class="interactable-label">Direction:</label>
+                    <button id="view-toggle" class="filter-button interactable-button">Horizontal</button>
+                </div>
+                <div class="filter-item interactable-dropdown-container">
+                    <label class="interactable-label">Visible Angles:</label>
+                    <button id="column-toggle-btn" class="filter-button interactable-button interactable-selector-btn">Angles ▾</button>
+                    <div id="column-picker-dropdown" class="interactable-dropdown-menu" style="display:none;">
+                        <!-- Checkboxes will be injected here -->
+                    </div>
+                </div>
+            </div>
+            <div id="photo-grid-header" class="photo-grid-header"></div>
+            <div id="photo-grid-root" class="photo-grid-container"></div>
+        </div>
     </div>
-    <script type="module" src="src/sidebar/sidebar.js"></script>
+
+    <!-- Templates -->
+    <template id="tpl-header-item">
+        <div class="header-item grid-header-cell"></div>
+    </template>
+
+    <template id="tpl-photo-row">
+        <div class="photo-row">
+            <div class="photo-date-column grid-header-cell"></div>
+            <div class="photo-items"></div>
+        </div>
+    </template>
+
+    <template id="tpl-photo-item">
+        <div class="photo-item">
+            <div class="photo-container">
+                <img src="" alt="" class="progress-photo" 
+                     onload="applyDynamicCrop(this)"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="photo-placeholder"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="tpl-blank-item">
+        <div class="photo-item">
+            <div class="photo-container blank-placeholder">
+            </div>
+        </div>
+    </template>
+
+    <script type="module" src="dist/src/sidebar/sidebar.js"></script>
 </body>
 </html>

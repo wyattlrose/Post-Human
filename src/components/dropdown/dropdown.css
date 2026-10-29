@@ -1,0 +1,51 @@
+.interactable-selector-btn {
+    background-color: var(--selector-bg);
+}
+
+.interactable-selector-btn:not(.active):hover {
+    background-color: var(--selector-hover);
+}
+
+.interactable-selector-btn.active {
+    border-radius: 0.25rem 0.25rem 0 0;
+}
+
+.interactable-selector-btn.active:hover {
+    background-color: var(--selector-bg);
+}
+
+.interactable-dropdown-container {
+    position: relative;
+}
+
+.interactable-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 100;
+    background-color: var(--selector-bg);
+    border: none;
+    outline: none;
+    border-radius: 0.5rem 0 0.5rem 0.5rem; /* Rounded top-left, bottom-left, bottom-right. Square top-right */
+    padding: 0.625rem;
+    min-width: 12.5rem;
+    box-shadow: 0 0.5rem 0.75rem var(--shadow-color);
+    clip-path: inset(0 -1.25rem -1.25rem -1.25rem); /* Hides shadow above the top edge */
+    max-height: 25rem;
+    overflow-y: auto;
+}
+
+.interactable-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.625rem;
+    cursor: pointer;
+    user-select: none;
+    font-size: var(--font-size-sm);
+}
+
+.interactable-dropdown-item:hover {
+    background-color: var(--selector-hover); /* Slightly brighter than selector-bg (#1c2b4a) */
+    border-radius: 0.25rem;
+}
