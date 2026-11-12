@@ -1,20 +1,52 @@
 :root {
-    /* Blue-tinted navy scale: each layer is slightly lighter than the one below it */
-    --bg-color: #0d1321;
-    --sidebar-bg: #121a2b;
-    --surface-color: #1a2438;
+    /* Neutral dark scale: each layer is slightly lighter than the one below it */
+    --bg-color: #121212;
+    --sidebar-bg: #191919;
+    --surface-color: #232323;
     --selector-bg: #1e3a64; /* Deep blue for selectors, sits between surface and accent */
     --selector-hover: #264a7c;
-    --text-primary: #e8eef7;
-    --text-secondary: #94a3b8;
+    --text-primary: #eeeeee;
+    --text-secondary: #a3a3a3;
     --accent-color: #3b82f6;
     --accent-hover: #2563eb;
-    --border-color: #2a3650;
-    --track-color: #33415c;
+    --border-color: #343434;
+    --track-color: #404040;
+    --interactive-surface: #1a2438;
+    --interactive-border: #2a3650;
+    --interactive-track: #33415c;
+    --interactive-text-primary: #e8eef7;
+    --interactive-text-secondary: #94a3b8;
     --white: #ffffff;
     --black: #000000;
-    --shadow-color: rgba(3, 7, 18, 0.5);
-    --sidebar-shadow: rgba(3, 7, 18, 0.4);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --sidebar-shadow: rgba(0, 0, 0, 0.4);
+
+    /* Shared chart palette: accents, effort types, and neutral rendering roles */
+    --chart-accent-color: #009bce;
+    --chart-effort-cut-color: #ff7c5b;
+    --chart-effort-maintain-color: #ffd034;
+    --chart-effort-bulk-color: #72c674;
+    --chart-effort-unknown-color: var(--text-secondary);
+    --chart-neutral-white-rgb: 255, 255, 255;
+    --chart-neutral-black-rgb: 0, 0, 0;
+    --chart-grid-rgb: 64, 64, 64;
+    --chart-grid-color: rgba(var(--chart-grid-rgb), 0.5);
+    --chart-axis-color: rgba(var(--chart-neutral-white-rgb), 0.4);
+    --chart-text-color: rgba(var(--chart-neutral-white-rgb), 0.7);
+    --chart-highlight-color: rgb(var(--chart-neutral-white-rgb));
+    --chart-highlight-glow: rgba(var(--chart-neutral-white-rgb), 0.65);
+    --chart-hover-guide-color: rgba(var(--chart-neutral-white-rgb), 0.55);
+    --chart-tooltip-outline-color: rgba(var(--chart-neutral-white-rgb), 0.04);
+    --chart-tooltip-background-color: #141414;
+    --chart-tooltip-shadow-color: rgba(var(--chart-neutral-black-rgb), 0.7);
+    --chart-tooltip-text-color: rgb(var(--chart-neutral-white-rgb));
+    --chart-effort-label-color: rgba(var(--chart-neutral-white-rgb), 0.85);
+    --chart-effort-label-hover-color: rgba(var(--chart-neutral-white-rgb), 0.98);
+    --chart-effort-label-hover-background: rgba(var(--chart-neutral-white-rgb), 0.035);
+    --chart-tooltip-date-color: rgba(var(--chart-neutral-white-rgb), 0.55);
+    --chart-tooltip-value-color: rgba(var(--chart-neutral-white-rgb), 0.95);
+
+    color-scheme: dark;
 
     --font-size-xs: 0.75rem;
     --font-size-sm: 0.875rem;

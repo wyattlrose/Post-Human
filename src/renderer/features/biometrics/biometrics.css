@@ -1,0 +1,197 @@
+.biometrics-dashboard {
+    padding: 20px;
+}
+
+.biometrics-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.biometrics-secondary-btn {
+    background-color: var(--selector-bg);
+}
+
+.biometrics-secondary-btn:hover {
+    background-color: var(--selector-hover);
+}
+
+/* Effort type colors */
+.effort-type-cut {
+    --effort-color: var(--chart-effort-cut-color);
+}
+
+.effort-type-maintain {
+    --effort-color: var(--chart-effort-maintain-color);
+}
+
+.effort-type-bulk {
+    --effort-color: var(--chart-effort-bulk-color);
+}
+
+.effort-type-unknown {
+    --effort-color: var(--chart-effort-unknown-color);
+}
+
+.biometrics-effort-swatch {
+    flex: none;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background-color: var(--effort-color);
+}
+
+.biometrics-effort-btn {
+    max-width: 24rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--interactive-text-secondary);
+}
+
+.biometrics-effort-btn.is-selected {
+    color: var(--interactive-text-primary);
+    box-shadow: inset 0 0 0 2px var(--accent-color);
+}
+
+.biometrics-effort-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.biometrics-effort-menu {
+    left: 0;
+    right: auto;
+    border-radius: 0 0.5rem 0.5rem 0.5rem;
+    min-width: 100%;
+    max-width: 32rem;
+}
+
+.biometrics-effort-type-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 9rem;
+}
+
+/* Effort editor row */
+.biometrics-effort-editor {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.biometrics-effort-editor[hidden],
+.biometrics-effort-editor [hidden] {
+    display: none;
+}
+
+.biometrics-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.biometrics-effort-description-field {
+    flex: 0 1 20rem;
+}
+
+/* Effort start markers on the chart */
+.biometrics-effort-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-50%);
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.biometrics-effort-marker::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    background-color: var(--effort-color);
+}
+
+.biometrics-effort-marker:hover::before,
+.biometrics-effort-marker.is-hovered::before {
+    box-shadow: 0 0 6px var(--effort-color);
+}
+
+.biometrics-chart .line-chart {
+    --effort-label-row-height: 26px;
+
+    height: calc(var(--lc-height) + var(--effort-label-row-height));
+    grid-template-rows: var(--effort-label-row-height) 1fr auto auto;
+    grid-template-areas:
+        ". effort-labels"
+        "y-axis plot"
+        "corner x-axis"
+        "legend legend";
+}
+
+.biometrics-effort-labels {
+    grid-area: effort-labels;
+    position: relative;
+    min-width: 0;
+    pointer-events: none;
+}
+
+.biometrics-effort-marker-label {
+    position: absolute;
+    top: 0;
+    box-sizing: border-box;
+    width: max-content;
+    height: var(--effort-label-row-height);
+    padding: 0 6px;
+    color: var(--chart-effort-label-color);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: calc(var(--effort-label-row-height) - 2px);
+    border-bottom: 2px solid var(--effort-color);
+    pointer-events: auto;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.biometrics-effort-marker-label.is-hovered {
+    color: var(--chart-effort-label-hover-color);
+    background-color: var(--chart-effort-label-hover-background);
+}
+
+.biometrics-effort-marker-label::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: -2px;
+    left: 0;
+    height: 2px;
+    background-color: var(--effort-color);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.biometrics-effort-marker-label.is-hovered::after {
+    opacity: 1;
+    box-shadow: 0 0 6px var(--effort-color);
+}
+
+.biometrics-chart {
+    width: 100%;
+}
+
+.biometrics-chart .lc-tooltip-x {
+    color: var(--chart-tooltip-date-color);
+}
+
+.biometrics-chart .lc-tooltip-y {
+    color: var(--chart-tooltip-value-color);
+}

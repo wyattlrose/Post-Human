@@ -1,24 +1,43 @@
 {
   "name": "health",
   "version": "1.0.0",
-  "description": "",
+  "description": "Progress photo tracker",
   "main": "dist/src/main_process/main.js",
   "scripts": {
     "start": "npm run build && electron .",
     "build": "tsc && (mv dist/src/main_process/preload.js dist/src/main_process/preload.cjs || true)",
+    "dist": "npm run build && electron-builder --linux --publish never",
     "db": "ELECTRON_RUN_AS_NODE=1 ./node_modules/.bin/electron agent-scripts/db-shell.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "health <health@localhost>",
+  "build": {
+    "appId": "com.health.app",
+    "productName": "health",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "src/renderer/**/*.{html,css,svg,png}",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "maintainer": "health <health@localhost>"
+    }
+  },
   "type": "module",
   "license": "ISC",
-  "dependencies": {
-    "electron": "^39.8.10",
-    "sqlite3": "^6.0.1"
-  },
   "devDependencies": {
     "@types/electron": "^1.6.12",
     "@types/node": "^26.6.5",
+    "electron": "^39.8.10",
+    "electron-builder": "^26.18.0",
     "typescript": "^7.0.2"
   }
 }

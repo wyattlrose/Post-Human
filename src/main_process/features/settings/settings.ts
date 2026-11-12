@@ -1,14 +1,35 @@
-import { ipcMain, BrowserWindow } from 'electron';
+import {ipcMain} from 'electron';
 import * as fs from 'fs';
-import { settingsPath } from '../../db.js';
-import { Settings, SettingsSection } from '../../../shared/types/index.js';
+import * as path from 'path';
+import {settingsPath} from '../../db.js';
+import {Settings, SettingsSection} from '../../../shared/types/index.js';
 
-// Global settings object to ensure consistency
-export let settings: Settings = {};
+let settings: Settings | null = null;
 
-export const loadSettings = () => {
-    settings = getSettings();
+export const getSettings = (): Settings => {
+    if (settings === null) {
+        settings = readSettingsFile();
+    }
     return settings;
+}
+
+export const updateSetting = <S extends SettingsSection, K extends keyof NonNullable<Settings[S]>>(
+    section: S,
+    key: K,
+    value: NonNullable<Settings[S]>[K]
+): boolean => {
+    try {
+        const currentSettings = getSettings();
+        const updatedSettings: Settings = {...currentSettings};
+        const updatedSection = {...currentSettings[section], [key]: value};
+        Object.assign(updatedSettings, {[section]: updatedSection});
+        writeSettingsFile(updatedSettings);
+        settings = updatedSettings;
+        return true;
+    } catch (e) {
+        console.error(`Failed to update setting ${section}.${String(key)}:`, e);
+        return false;
+    }
 }
 
 export const registerSettingsIpc = () => {
@@ -16,56 +37,57 @@ export const registerSettingsIpc = () => {
         return getSettings();
     });
 
-    ipcMain.handle('update-setting', async (event, section: SettingsSection, key: string, value: any) => {
-        try {
-            const sectionSettings: Record<string, any> = settings[section] ?? {};
-            sectionSettings[key] = value;
-            (settings as Record<string, any>)[section] = sectionSettings;
-            writeSettings();
-            return true;
-        } catch (e) {
-            console.error(`Failed to update setting ${section}.${key}:`, e);
-            return false;
-        }
+    ipcMain.handle('update-setting', async (_event, section: SettingsSection, key: string, value: unknown) => {
+        return updateSetting(section, key as keyof NonNullable<Settings[typeof section]>, value as never);
     });
 }
 
-const writeSettings = () => {
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
-}
+const writeSettingsFile = (data: Settings) => {
+    const temporaryPath = `${settingsPath}.tmp`;
+    let fileDescriptor: number | undefined;
+    try {
+        fileDescriptor = fs.openSync(temporaryPath, 'w', 0o600);
+        fs.writeFileSync(fileDescriptor, JSON.stringify(data, null, 2), 'utf8');
+        fs.fchmodSync(fileDescriptor, 0o600);
+        fs.fsyncSync(fileDescriptor);
+        fs.closeSync(fileDescriptor);
+        fileDescriptor = undefined;
+        fs.renameSync(temporaryPath, settingsPath);
 
-// Moves legacy flat keys (e.g. "window_width", "progress_photo_size") into their nested sections
-const migrateSettings = (raw: Record<string, any>): { migrated: Settings, changed: boolean } => {
-    const migrated: Record<string, any> = { ...raw };
-    let changed = false;
-    const prefixes: Record<string, SettingsSection> = { window_: 'window', progress_photo_: 'progress_photo' };
-
-    for (const key of Object.keys(raw)) {
-        const prefix = Object.keys(prefixes).find(p => key.startsWith(p));
-        if (!prefix) continue;
-        const section = prefixes[prefix];
-        migrated[section] = { ...(migrated[section] ?? {}) };
-        const subKey = key.slice(prefix.length);
-        if (migrated[section][subKey] === undefined) {
-            migrated[section][subKey] = raw[key];
+        try {
+            const directoryDescriptor = fs.openSync(path.dirname(settingsPath), 'r');
+            try {
+                fs.fsyncSync(directoryDescriptor);
+            } finally {
+                fs.closeSync(directoryDescriptor);
+            }
+        } catch {
+            // Directory fsync is not supported on every platform/filesystem.
         }
-        delete migrated[key];
-        changed = true;
+    } catch (error) {
+        if (fileDescriptor !== undefined) {
+            try {
+                fs.closeSync(fileDescriptor);
+            } catch {
+                // Preserve the original write error.
+            }
+        }
+        try {
+            fs.unlinkSync(temporaryPath);
+        } catch {
+            // The temporary file may not have been created or may already be renamed.
+        }
+        throw error;
     }
-    return { migrated, changed };
 }
 
-const getSettings = (): Settings => {
+const readSettingsFile = (): Settings => {
     let settings: Settings = {}
     try {
         if (fs.existsSync(settingsPath)) {
             const data = fs.readFileSync(settingsPath, 'utf8');
-            const { migrated, changed } = migrateSettings(JSON.parse(data));
-            settings = migrated;
-            if (changed) {
-                fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
-            }
-            console.log('Settings: \n', settings);
+            settings = JSON.parse(data);
+            console.log('Settings:' + settingsPath + ' \n', settings);
         } else {
             console.log('Settings file not found at:', settingsPath);
         }
@@ -73,20 +95,4 @@ const getSettings = (): Settings => {
         console.error('Error reading settings file:', err);
     }
     return settings;
-}
-
-export const saveSettings = (win: BrowserWindow) => {
-    try {
-        const bounds = win.getBounds();
-        settings.window = {
-            ...settings.window,
-            width: bounds.width,
-            height: bounds.height,
-            x_pos: bounds.x,
-            y_pos: bounds.y
-        };
-        writeSettings();
-    } catch (e) {
-        console.error('Failed to save settings:', e);
-    }
 }

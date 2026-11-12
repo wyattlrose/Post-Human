@@ -1,21 +1,25 @@
 import {loadProgressPhotos} from '../progress-photos/progress-photos.js';
 import {loadPhotoEditor} from '../photo-editor/photo-editor.js';
+import {loadPhotoUpload} from '../photo-upload/photo-upload.js';
+import {cleanupBiometrics, loadBiometrics} from '../biometrics/biometrics.js';
+import {cleanupIntegrations, loadIntegrations} from '../integrations/integrations.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.createElement('div');
     sidebar.id = 'sidebar';
     sidebar.className = 'sidebar';
 
-    const icons = [
+    const dashboardIcons = [
         {name: 'Progress Photos', icon: 'features/sidebar/assets/camera.svg', id: 'dash-photos', isSvg: true},
         {name: 'Photo Editor', icon: 'features/sidebar/assets/photo-editor.svg', id: 'dash-photo-editor', isSvg: true},
         {name: 'Photo Upload', icon: 'features/sidebar/assets/photo-upload.svg', id: 'dash-photo-upload', isSvg: true},
-        {name: 'Analytics', icon: '📈', id: 'dash-analytics'},
-        {name: 'Users', icon: '👥', id: 'dash-users'},
-        {name: 'Settings', icon: '⚙️', id: 'dash-settings'}
+        {name: 'Biometrics', icon: 'features/sidebar/assets/heart.svg', id: 'dash-biometrics', isSvg: true}
+    ];
+    const settingsIcons = [
+        {name: 'Integrations', icon: 'features/sidebar/assets/integrations.svg', id: 'dash-integrations', isSvg: true}
     ];
 
-    icons.forEach(item => {
+    const createIcon = (item: typeof dashboardIcons[number] | typeof settingsIcons[number]) => {
         const iconContainer = document.createElement('div');
         iconContainer.className = 'sidebar-icon';
         iconContainer.title = item.name;
@@ -33,8 +37,18 @@ document.addEventListener('DOMContentLoaded', () => {
             iconContainer.classList.add('active');
         });
 
-        sidebar.appendChild(iconContainer);
-    });
+        return iconContainer;
+    };
+
+    const dashboardGroup = document.createElement('div');
+    dashboardGroup.className = 'sidebar-group sidebar-dashboard-group';
+    dashboardIcons.forEach(item => dashboardGroup.appendChild(createIcon(item)));
+    sidebar.appendChild(dashboardGroup);
+
+    const settingsGroup = document.createElement('div');
+    settingsGroup.className = 'sidebar-group sidebar-settings-group';
+    settingsIcons.forEach(item => settingsGroup.appendChild(createIcon(item)));
+    sidebar.appendChild(settingsGroup);
 
     // Auto-click the first icon to load the dashboard
     setTimeout(() => {
@@ -43,6 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 
     function switchDashboard(id: string) {
+        cleanupIntegrations();
+        cleanupBiometrics();
+
         const welcomeScreen = document.getElementById('welcome-screen');
         const progressDashboard = document.getElementById('progress-photo-dashboard');
 
@@ -51,6 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (progressDashboard) progressDashboard.style.display = 'none';
         const photoEditorDashboard = document.getElementById('photo-editor-dashboard');
         if (photoEditorDashboard) photoEditorDashboard.style.display = 'none';
+        const photoUploadDashboard = document.getElementById('photo-upload-dashboard');
+        if (photoUploadDashboard) photoUploadDashboard.style.display = 'none';
 
         // Remove any dynamically added content from other dashboards
         const temps = document.querySelectorAll('.temp-dashboard');
@@ -60,16 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
             loadProgressPhotos();
         } else if (id === 'dash-photo-editor') {
             loadPhotoEditor();
-        } else {
-            const mainContent = document.getElementById('main-content');
-            if (mainContent) {
-                mainContent.insertAdjacentHTML('beforeend', `
-                    <div class="temp-dashboard">
-                        <h1>${id.replace('dash-', '').toUpperCase()}</h1>
-                        <p>Content for ${id} dashboard.</p>
-                    </div>
-                `);
-            }
+        } else if (id === 'dash-biometrics') {
+            loadBiometrics();
+        } else if (id === 'dash-photo-upload') {
+            loadPhotoUpload();
+        } else if (id === 'dash-integrations') {
+            loadIntegrations();
         }
     }
 

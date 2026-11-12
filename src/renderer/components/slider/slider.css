@@ -12,7 +12,7 @@ input[type="range"]:focus {
 
 /* Webkit (Chrome, Safari, Edge, Opera) */
 input[type="range"]::-webkit-slider-runnable-track {
-    background-color: var(--track-color);
+    background-color: var(--interactive-track);
     border: none;
     border-radius: 0.125rem;
     height: 0.25rem;
@@ -36,7 +36,7 @@ input[type="range"]:hover::-webkit-slider-thumb {
 
 /* Firefox */
 input[type="range"]::-moz-range-track {
-    background-color: var(--track-color);
+    background-color: var(--interactive-track);
     border: none;
     border-radius: 0.125rem;
     height: 0.25rem;

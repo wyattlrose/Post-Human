@@ -1,0 +1,36 @@
+#photo-upload-dashboard {
+    flex-direction: column;
+    height: 100%;
+    overflow: auto;
+}
+
+#photo-upload-dashboard > h1,
+#photo-upload-dashboard > .filter-container {
+    flex: 0 0 auto;
+}
+
+.upload-drop-container {
+    flex: 0 0 auto;
+    padding: 0.625rem 0;
+}
+
+#upload-thumbnail-strip .photo-strip-item {
+    cursor: default;
+}
+
+#upload-thumbnail-strip .photo-strip-item.needs-settings .photo-strip-label {
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.upload-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0;
+    flex: 0 0 auto;
+}
+
+.upload-status {
+    color: var(--text-secondary);
+}

@@ -6,18 +6,17 @@ export class Dropdown {
     private static instances = new Set<Dropdown>();
     private static documentListenerAdded = false;
 
+    private static readonly onDocumentClick = (e: MouseEvent) => {
+        Dropdown.instances.forEach(d => {
+            if (!d.menu.contains(e.target as Node) && e.target !== d.button) d.close();
+        });
+    };
+
     constructor(private button: HTMLButtonElement, private menu: HTMLElement) {
         Dropdown.instances.add(this);
         Dropdown.addDocumentListener();
 
-        this.button.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (this.isOpen) {
-                this.close();
-            } else {
-                this.open();
-            }
-        });
+        this.button.addEventListener('click', this.onButtonClick);
     }
 
     get isOpen(): boolean {
@@ -41,6 +40,16 @@ export class Dropdown {
         this.button.classList.remove('active');
     }
 
+    dispose(): void {
+        this.close();
+        this.button.removeEventListener('click', this.onButtonClick);
+        Dropdown.instances.delete(this);
+        if (Dropdown.instances.size === 0 && Dropdown.documentListenerAdded) {
+            document.removeEventListener('click', Dropdown.onDocumentClick);
+            Dropdown.documentListenerAdded = false;
+        }
+    }
+
     setLabel(text: string): void {
         this.button.textContent = text;
     }
@@ -48,11 +57,12 @@ export class Dropdown {
     private static addDocumentListener(): void {
         if (Dropdown.documentListenerAdded) return;
         Dropdown.documentListenerAdded = true;
-
-        document.addEventListener('click', (e) => {
-            Dropdown.instances.forEach(d => {
-                if (!d.menu.contains(e.target as Node) && e.target !== d.button) d.close();
-            });
-        });
+        document.addEventListener('click', Dropdown.onDocumentClick);
     }
+
+    private onButtonClick = (e: MouseEvent) => {
+        e.stopPropagation();
+        if (this.isOpen) this.close();
+        else this.open();
+    };
 }

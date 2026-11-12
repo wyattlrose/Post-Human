@@ -2,6 +2,10 @@
 
 This project uses a custom script to interact with its SQLite database, as standard `node:sqlite` is only available in the Electron environment and the `sqlite3` CLI might not be installed.
 
+## Specifications
+The details for how a feature should behave and be implemented are contained in a per-package _spec.md file. The constraints defined in these files should be respected when implementing requests.
+A check should be made for this file before making changes in a respective package.
+
 ## Database Location
 The database is located at: `~/.config/health/database.db`
 

@@ -7,8 +7,8 @@ export class PoseDTO implements Pose {
     aspectRatio: number;
     verticalOffset: number;
     horizontalOffset: number;
-    collectionSize: number;
-    singleSize: number;
+    verticalSize: number;
+    horizontalSize: number;
     yLandmark1Label: string;
     yLandmark2Label: string;
     xLandmarkLabel: string;
@@ -21,8 +21,8 @@ export class PoseDTO implements Pose {
                     aspect_ratio,
                     vertical_offset,
                     horizontal_offset,
-                    collection_size,
-                    single_size,
+                    vertical_size,
+                    horizontal_size,
                     y_landmark_1,
                     y_landmark_2,
                     x_landmark,
@@ -34,8 +34,8 @@ export class PoseDTO implements Pose {
         this.aspectRatio = aspect_ratio;
         this.verticalOffset = vertical_offset ?? 0;
         this.horizontalOffset = horizontal_offset ?? 0;
-        this.collectionSize = collection_size;
-        this.singleSize = single_size;
+        this.verticalSize = vertical_size;
+        this.horizontalSize = horizontal_size;
         this.yLandmark1Label = y_landmark_1 ?? '';
         this.yLandmark2Label = y_landmark_2 ?? '';
         this.xLandmarkLabel = x_landmark ?? '';
@@ -54,8 +54,8 @@ export class PoseDTO implements Pose {
             aspect_ratio: this.aspectRatio,
             vertical_offset: this.verticalOffset,
             horizontal_offset: this.horizontalOffset,
-            collection_size: this.collectionSize,
-            single_size: this.singleSize,
+            vertical_size: this.verticalSize,
+            horizontal_size: this.horizontalSize,
             y_landmark_1: this.yLandmark1Label,
             y_landmark_2: this.yLandmark2Label,
             x_landmark: this.xLandmarkLabel

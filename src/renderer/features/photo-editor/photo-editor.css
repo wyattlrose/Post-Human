@@ -1,22 +1,3 @@
-.editor-thumbnail-strip {
-    display: flex;
-    flex-direction: row;
-    gap: var(--grid-gap);
-    overflow-x: auto;
-    padding: 0.625rem 0;
-}
-
-.editor-thumbnail {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 0 0 auto;
-    cursor: pointer;
-}
-
-.editor-thumbnail.selected .photo-container {
-    outline: 2px solid var(--text-secondary);
-}
 
 #photo-editor-dashboard {
     flex-direction: column;
@@ -25,8 +6,7 @@
 }
 
 #photo-editor-dashboard > h1,
-#photo-editor-dashboard > .filter-container,
-.editor-thumbnail-strip {
+#photo-editor-dashboard > .filter-container {
     flex: 0 0 auto;
 }
 
@@ -121,12 +101,6 @@
     cursor: ns-resize;
 }
 
-.editor-thumbnail-label {
-    margin-top: 0.25rem;
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-    text-align: center;
-}
 
 .editor-canvas {
     overflow: hidden;

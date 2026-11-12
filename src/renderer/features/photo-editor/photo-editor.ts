@@ -2,7 +2,9 @@ import {ProgressPhoto, Pose, LandmarkKey} from '../../../shared/types/index.js';
 import {Dropdown} from '../../components/dropdown/dropdown.js';
 import {initSlider, updateSliderPosition} from '../../components/slider/slider.js';
 import {computeCropRect, CropSettings} from '../../utils/crop.js';
-import {snapToSlider, applySliderConfig} from '../../../shared/constants/photo.js';
+import {formatDate} from '../../utils/date.js';
+import {snapToSlider, applySliderConfig, defaultLandmarks} from '../../../shared/constants/photo.js';
+import {renderPhotoStrip, selectPhotoStripItem, getPhotoStripItem, appendPhotoStripControls} from '../../components/photo-strip/photo-strip.js';
 
 let poseDropdown: Dropdown | null = null;
 let dateDropdown: Dropdown | null = null;
@@ -68,10 +70,6 @@ function getPoseDates(poseId: number | null): number[] {
     return [...dates].sort((a, b) => b - a);
 }
 
-function formatDate(date: number): string {
-    return new Date(date * 1000).toLocaleDateString();
-}
-
 function selectPose(poseId: number | null, dateMenu: HTMLDivElement): void {
     currentPoseId = poseId;
     const pose = allPoses.find(p => p.poseId === poseId);
@@ -97,8 +95,8 @@ const hasLandmarkValue = (v: number | null | undefined): boolean => v !== null &
 function autoSelectPhoto(): void {
     const photos = getSelectedPhotos();
     const photo = photos.find(p => ![p.yLandmark1, p.yLandmark2, p.xLandmark].every(hasLandmarkValue)) ?? photos[0] ?? null;
-    document.querySelectorAll('#editor-thumbnail-strip .editor-thumbnail.selected').forEach(el => el.classList.remove('selected'));
-    if (photo) document.querySelector(`#editor-thumbnail-strip .editor-thumbnail[data-photo-id="${photo.photoId}"]`)?.classList.add('selected');
+    const strip = document.getElementById('editor-thumbnail-strip');
+    if (strip) selectPhotoStripItem(strip, photo ? String(photo.photoId) : null);
     openEditor(photo);
 }
 
@@ -119,43 +117,75 @@ function getSelectedPhotos(): ProgressPhoto[] {
 function renderThumbnails(): void {
     const strip = document.getElementById('editor-thumbnail-strip');
     if (!strip) return;
-    strip.innerHTML = '';
-
     const photos = getSelectedPhotos();
-    if (photos.length === 0) {
-        const msg = document.createElement('p');
-        msg.textContent = 'No photos for this pose and date.';
-        strip.appendChild(msg);
-        return;
-    }
-
     const pose = allPoses.find(p => p.poseId === currentPoseId);
     const aspectRatio = pose?.aspectRatio || 1.0;
     const poseSettings = {...pose, croppingPercent: pose?.croppingPercent || 50, aspectRatio};
-    const tpl = document.getElementById('tpl-editor-thumbnail') as HTMLTemplateElement;
 
-    photos.forEach(photo => {
-        const item = (tpl.content.cloneNode(true) as DocumentFragment).firstElementChild as HTMLElement;
-        item.dataset.photoId = photo.photoId.toString();
-        const container = item.querySelector('.photo-container') as HTMLElement;
-        container.style.setProperty('--container-width', `${THUMBNAIL_WIDTH}px`);
-        container.style.setProperty('--container-height', `${THUMBNAIL_WIDTH / aspectRatio}px`);
-
-        const img = item.querySelector('img') as HTMLImageElement;
-        img.dataset.photo = JSON.stringify(photo);
-        img.dataset.poseSettings = JSON.stringify(poseSettings);
-        img.alt = photo.angle;
-        img.src = `photo://${photo.photoId}.${photo.extension}`;
-
-        (item.querySelector('.photo-placeholder') as HTMLElement).textContent = `ID: ${photo.photoId}`;
-        (item.querySelector('.editor-thumbnail-label') as HTMLElement).textContent = photo.angle;
-        item.addEventListener('click', () => {
-            strip.querySelectorAll('.editor-thumbnail.selected').forEach(el => el.classList.remove('selected'));
-            item.classList.add('selected');
-            openEditor(photo);
-        });
-        strip.appendChild(item);
+    renderPhotoStrip(strip, photos.map(photo => ({
+        key: String(photo.photoId),
+        src: `photo://${photo.photoId}.${photo.extension}`,
+        label: photo.angle,
+        placeholder: `ID: ${photo.photoId}`,
+        photo,
+        poseSettings
+    })), {
+        width: THUMBNAIL_WIDTH,
+        aspectRatio,
+        emptyMessage: 'No photos for this pose and date.',
+        onSelect: key => openEditor(photos.find(p => String(p.photoId) === key) ?? null)
     });
+
+    const angles = [...(pose?.angles ?? [])].sort((a, b) => a.order - b.order);
+    photos.forEach(photo => {
+        const item = getPhotoStripItem(strip, String(photo.photoId));
+        if (!item) return;
+        appendPhotoStripControls(item, {
+            angles,
+            angleId: photo.angleId,
+            onAngleChange: angleId => changePhotoAngle(photo, angleId),
+            onRemove: () => removePhoto(photo)
+        });
+    });
+    if (editingPhoto && photos.includes(editingPhoto)) selectPhotoStripItem(strip, String(editingPhoto.photoId));
+}
+
+// Another photo with the same date, pose and angle blocks the change (the row must stay unique)
+async function changePhotoAngle(photo: ProgressPhoto, angleId: number | null): Promise<void> {
+    const pose = allPoses.find(p => p.poseId === photo.poseId);
+    const angle = pose?.angles.find(a => a.angleId === angleId);
+    const clash = allPhotos.some(p => p !== photo && p.date === photo.date && p.poseId === photo.poseId && p.angleId === angleId);
+    if (angleId === null || !angle || angleId === photo.angleId || clash) {
+        if (clash) alert(`A photo with angle "${angle?.angle}" already exists for this pose and date.`);
+        renderThumbnails();
+        return;
+    }
+    if (await window.api.updatePhotoAngle(photo.photoId, angleId)) {
+        photo.angleId = angleId;
+        photo.angle = angle.angle;
+        if (editingPhoto === photo) {
+            const img = document.getElementById('editor-image') as HTMLImageElement | null;
+            if (img) img.alt = angle.angle;
+        }
+    }
+    renderThumbnails();
+}
+
+async function removePhoto(photo: ProgressPhoto): Promise<void> {
+    if (!confirm(`Delete the ${photo.angle} photo from ${formatDate(photo.date)}? This can't be undone.`)) return;
+    if (!await window.api.deleteProgressPhoto(photo.photoId)) return;
+    allPhotos = allPhotos.filter(p => p !== photo);
+    if (getSelectedPhotos().length === 0) {
+        // Last photo for this date: fall back to the next most recent date
+        const dateMenu = document.getElementById('editor-date-select-dropdown') as HTMLDivElement;
+        const dates = getPoseDates(currentPoseId);
+        renderDatePicker(dateMenu, dates);
+        selectDate(dates[0] ?? null);
+        return;
+    }
+    if (editingPhoto === photo) editingPhoto = null;
+    renderThumbnails();
+    if (!editingPhoto) autoSelectPhoto();
 }
 
 // ---------- Sidebar ----------
@@ -205,6 +235,17 @@ function getNumberInputs(): HTMLInputElement[] {
 
 // Each description is saved to PROGRESS_POSE as soon as the input is committed (blur / Enter)
 function setupSidebar(): void {
+    const sidebar = document.getElementById('editor-sidebar');
+    if (sidebar) {
+        const item = document.createElement('div');
+        item.className = 'editor-sidebar-item';
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'interactable-button';
+        resetBtn.textContent = 'Reset Landmarks';
+        resetBtn.addEventListener('click', resetLandmarks);
+        item.appendChild(resetBtn);
+        sidebar.appendChild(item);
+    }
     getSidebarInputs().forEach(input => {
         const field = input.dataset.poseField as PoseLabelField;
         input.addEventListener('change', () => {
@@ -235,9 +276,8 @@ function setupSidebar(): void {
             window.api.updatePoseSettings(pose.poseId, {[field]: value});
             const selectedId = editingPhoto?.photoId;
             renderThumbnails();
-            if (selectedId !== undefined) {
-                document.querySelector(`#editor-thumbnail-strip .editor-thumbnail[data-photo-id="${selectedId}"]`)?.classList.add('selected');
-            }
+            const strip = document.getElementById('editor-thumbnail-strip');
+            if (strip && selectedId !== undefined) selectPhotoStripItem(strip, String(selectedId));
             positionLandmarks();
         });
     });
@@ -257,6 +297,15 @@ function getCropSettings(): CropSettings {
         verticalOffset: read('verticalOffset'),
         horizontalOffset: read('horizontalOffset')
     };
+}
+
+// Y Landmark 1 at 1/4 height, Y Landmark 2 at 3/4 height, X Landmark at the horizontal center of the photo
+function resetLandmarks(): void {
+    const img = document.getElementById('editor-image') as HTMLImageElement | null;
+    if (!editingPhoto || !img || img.naturalWidth === 0) return;
+    Object.assign(editingPhoto, defaultLandmarks(img.naturalWidth, img.naturalHeight));
+    (['yLandmark1', 'yLandmark2', 'xLandmark'] as LandmarkKey[]).forEach(key => saveLandmark(editingPhoto!, key));
+    positionLandmarks();
 }
 
 // ---------- Landmark editor ----------
@@ -309,6 +358,7 @@ function positionLandmarks(): void {
     img.style.height = `${height}px`;
     img.style.left = `${left}px`;
     img.style.top = `${top}px`;
+    img.style.borderRadius = `${EDITOR_BORDER_RADIUS}px`;
 
     // Final crop area, shared with applyDynamicCrop on Progress Photos (image pixel coordinates)
     const crop = computeCropRect(editingPhoto, getCropSettings());
@@ -357,8 +407,11 @@ function positionLandmarks(): void {
         rectEl.style.top = `${rt}px`;
         rectEl.style.width = `${rw}px`;
         rectEl.style.height = `${rh}px`;
+        rectEl.style.borderRadius = `${EDITOR_BORDER_RADIUS}px`;
     }
 }
+
+const EDITOR_BORDER_RADIUS = 8;
 
 // Minimum gap between the Y landmarks, as a fraction of the photo height
 const Y_LANDMARK_BUFFER = 0.02;
@@ -519,7 +572,8 @@ function saveLandmark(photo: ProgressPhoto, key: LandmarkKey): void {
     window.api.updatePhotoLandmark(photo.photoId, key, photo[key]);
 
     // Refresh the thumbnail crop to reflect the new landmark
-    const thumbImg = document.querySelector<HTMLImageElement>(`.editor-thumbnail[data-photo-id="${photo.photoId}"] img`);
+    const strip = document.getElementById('editor-thumbnail-strip');
+    const thumbImg = strip ? getPhotoStripItem(strip, String(photo.photoId))?.querySelector('img') : null;
     if (thumbImg) {
         thumbImg.dataset.photo = JSON.stringify(photo);
         if (thumbImg.complete && thumbImg.naturalWidth > 0) window.applyDynamicCrop(thumbImg);

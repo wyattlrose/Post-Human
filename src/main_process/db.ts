@@ -1,7 +1,7 @@
-import { app } from 'electron';
+import {app} from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { DatabaseSync } from 'node:sqlite';
+import {DatabaseSync} from 'node:sqlite';
 
 // File and directory paths
 export const userDataPath = app.getPath('userData')
@@ -11,7 +11,7 @@ export const photosDir = path.join(userDataPath, 'progress_photos');
 
 // Ensure photos directory exists
 if (!fs.existsSync(photosDir)) {
-    fs.mkdirSync(photosDir, { recursive: true });
+    fs.mkdirSync(photosDir, {recursive: true});
 }
 
 export const db = new DatabaseSync(dbPath);

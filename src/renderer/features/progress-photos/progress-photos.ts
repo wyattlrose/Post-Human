@@ -2,6 +2,7 @@ import {ProgressPhoto, Pose, Angle, ProgressPhotoSettings} from '../../../shared
 import {Dropdown} from '../../components/dropdown/dropdown.js';
 import {initSlider, updateSliderPosition} from '../../components/slider/slider.js';
 import {computeCropRect} from '../../utils/crop.js';
+import {formatDate} from '../../utils/date.js';
 import {snapToSlider, applySliderConfig} from '../../../shared/constants/photo.js';
 
 let poseDropdown: Dropdown | null = null;
@@ -114,11 +115,11 @@ function renderDashboard(): void {
 
     renderPosePicker(poseSelectDropdownEl, poseSelectBtnEl, sizeSliderEl, sizeValueEl, cropSliderEl, cropValueEl, aspectSliderEl, aspectValueEl, columnPickerDropdownEl);
 
-    // TODO: "singleSize" represents the size of the photos when rendered in their horizontal view (angle-rows mode).
+    // TODO: "horizontalSize" represents the size of the photos when rendered in their horizontal view (angle-rows mode).
     // It should be renamed to something more descriptive in the future.
     let currentSize = currentViewMode === 'date-rows'
-        ? (currentPose?.collectionSize || settings.size || 150)
-        : (currentPose?.singleSize || settings.size || 150);
+        ? (currentPose?.verticalSize || settings.size || 150)
+        : (currentPose?.horizontalSize || settings.size || 150);
 
     currentSize = snapToSlider('size', currentSize);
     sizeSliderEl.value = currentSize.toString();
@@ -195,12 +196,12 @@ function setupListeners(
 
         if (pose) {
             if (currentViewMode === 'date-rows') {
-                pose.collectionSize = newSize;
-                window.api.updatePoseSettings(poseId, {collectionSize: newSize});
+                pose.verticalSize = newSize;
+                window.api.updatePoseSettings(poseId, {verticalSize: newSize});
             } else {
-                // TODO: "singleSize" represents the size of the photos when rendered in their horizontal view (angle-rows mode).
-                pose.singleSize = newSize;
-                window.api.updatePoseSettings(poseId, {singleSize: newSize});
+                // TODO: "horizontalSize" represents the size of the photos when rendered in their horizontal view (angle-rows mode).
+                pose.horizontalSize = newSize;
+                window.api.updatePoseSettings(poseId, {horizontalSize: newSize});
             }
         }
     });
@@ -240,8 +241,8 @@ function setupListeners(
         // Update size slider to reflect the new view mode's specific size
         const currentPose = allPoses.find(p => p.poseId === parseInt(currentPoseId || '', 10));
         if (currentPose) {
-            // TODO: "singleSize" represents the size of the photos when rendered in their horizontal view (angle-rows mode).
-            const newSize = currentViewMode === 'date-rows' ? (currentPose.collectionSize || 150) : (currentPose.singleSize || 150);
+            // TODO: "horizontalSize" represents the size of the photos when rendered in their horizontal view (angle-rows mode).
+            const newSize = currentViewMode === 'date-rows' ? (currentPose.verticalSize || 150) : (currentPose.horizontalSize || 150);
             sizeSliderEl.value = newSize.toString();
             sizeValueEl.textContent = `${newSize}px`;
             updateSliderPosition(sizeSliderEl);
@@ -277,10 +278,10 @@ function updatePhotoGrid(poseId: string, customSize: string, customCrop: string,
     const filteredPhotos = allPhotos.filter(p => p.poseId === numericPoseId);
     const poseSettings = allPoses.find(p => p.poseId === numericPoseId);
 
-    // TODO: "singleSize" represents the size of the photos when rendered in their horizontal view (angle-rows mode).
+    // TODO: "horizontalSize" represents the size of the photos when rendered in their horizontal view (angle-rows mode).
     const defaultSize = currentViewMode === 'date-rows'
-        ? (poseSettings?.collectionSize || 150)
-        : (poseSettings?.singleSize || 150);
+        ? (poseSettings?.verticalSize || 150)
+        : (poseSettings?.horizontalSize || 150);
 
     // Create a fragment to build the new grid content
     const fragment = document.createDocumentFragment();
@@ -297,7 +298,7 @@ function updatePhotoGrid(poseId: string, customSize: string, customCrop: string,
 
     // Group photos by date
     const groupedPhotos = filteredPhotos.reduce((acc, photo) => {
-        const date = new Date(photo.date * 1000).toLocaleDateString();
+        const date = formatDate(photo.date);
         if (!acc[date]) {
             acc[date] = [];
         }
@@ -305,14 +306,17 @@ function updatePhotoGrid(poseId: string, customSize: string, customCrop: string,
         return acc;
     }, {} as Record<string, ProgressPhoto[]>);
 
-    // Sort dates ascending
-    const sortedDates = Object.keys(groupedPhotos).sort((a, b) => {
-        return new Date(a).getTime() - new Date(b).getTime();
+    // Sort date labels by their original timestamp, not their display string.
+    const dateTimestamps = new Map<string, number>();
+    filteredPhotos.forEach(photo => {
+        const date = formatDate(photo.date);
+        dateTimestamps.set(date, Math.min(dateTimestamps.get(date) ?? photo.date, photo.date));
     });
+    const sortedDates = Object.keys(groupedPhotos).sort((a, b) => dateTimestamps.get(a)! - dateTimestamps.get(b)!);
 
     const photoMap = new Map<string, ProgressPhoto>();
     filteredPhotos.forEach(p => {
-        const dateStr = new Date(p.date * 1000).toLocaleDateString();
+        const dateStr = formatDate(p.date);
         photoMap.set(`${dateStr}-${p.angle}`, p);
     });
 
@@ -612,7 +616,7 @@ function renderPosePicker(
             // Update sliders based on the new pose
             const newPose = allPoses.find(p => p.poseId === pose.poseId);
             if (newPose) {
-                const poseSize = currentViewMode === 'date-rows' ? newPose.collectionSize : newPose.singleSize;
+                const poseSize = currentViewMode === 'date-rows' ? newPose.verticalSize : newPose.horizontalSize;
                 sizeSliderEl.value = (poseSize || 150).toString();
                 sizeValueEl.textContent = `${sizeSliderEl.value}px`;
                 cropSliderEl.value = (newPose.croppingPercent || 50).toString();

@@ -3,7 +3,7 @@
     width: 100%;
     padding: 0.375rem 0.5rem;
     font: inherit;
-    color: inherit;
+    color: var(--interactive-text-primary);
     background-color: var(--selector-bg);
     border: none;
     outline: none;
@@ -17,5 +17,5 @@
 }
 
 .text-input::placeholder {
-    color: var(--text-secondary);
+    color: var(--interactive-text-secondary);
 }

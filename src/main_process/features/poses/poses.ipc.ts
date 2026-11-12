@@ -6,7 +6,7 @@ export const registerPoseIpc = () => {
     ipcMain.handle('get-progress-poses', async () => {
         try {
             const rows = db.prepare(`
-                SELECT pose_id, pose_name, cropping_percent, aspect_ratio, vertical_offset AS vertical_offset, horizontal_offset AS horizontal_offset, collection_size, single_size, y_landmark_1, y_landmark_2, x_landmark
+                SELECT pose_id, pose_name, cropping_percent, aspect_ratio, vertical_offset AS vertical_offset, horizontal_offset AS horizontal_offset, vertical_size, horizontal_size, y_landmark_1, y_landmark_2, x_landmark
                 FROM PROGRESS_POSE 
                 ORDER BY pose_name ASC
             `).all();
@@ -77,13 +77,13 @@ export const registerPoseIpc = () => {
                 fields.push('horizontal_offset = ?');
                 values.push(poseSettings.horizontalOffset);
             }
-            if (poseSettings.collectionSize !== undefined) {
-                fields.push('collection_size = ?');
-                values.push(poseSettings.collectionSize);
+            if (poseSettings.verticalSize !== undefined) {
+                fields.push('vertical_size = ?');
+                values.push(poseSettings.verticalSize);
             }
-            if (poseSettings.singleSize !== undefined) {
-                fields.push('single_size = ?');
-                values.push(poseSettings.singleSize);
+            if (poseSettings.horizontalSize !== undefined) {
+                fields.push('horizontal_size = ?');
+                values.push(poseSettings.horizontalSize);
             }
 
             if (poseSettings.yLandmark1Label !== undefined) {

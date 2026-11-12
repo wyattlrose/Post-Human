@@ -1,0 +1,178 @@
+.line-chart {
+    --lc-height: 320px;
+    --lc-series-color: var(--chart-accent-color);
+    --lc-grid-color: var(--chart-grid-color);
+    --lc-axis-color: var(--chart-axis-color);
+    --lc-text-color: var(--chart-text-color);
+    --lc-font-size: 12px;
+
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr auto auto;
+    grid-template-areas:
+        "y-axis plot"
+        "corner x-axis"
+        "legend legend";
+    width: 100%;
+    height: var(--lc-height);
+    color: var(--lc-text-color);
+    font-size: var(--lc-font-size);
+}
+
+/* Axes: every tick sits in the same grid cell, so the axis sizes to its widest/tallest label;
+   transforms move them into place without affecting layout. */
+.lc-y-axis,
+.lc-x-axis {
+    display: grid;
+    min-width: 0;
+    min-height: 0;
+}
+
+.lc-y-axis {
+    grid-area: y-axis;
+    padding-right: 10px;
+}
+
+.lc-x-axis {
+    grid-area: x-axis;
+    padding-top: 8px;
+}
+
+.lc-corner {
+    grid-area: corner;
+}
+
+.lc-tick {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+}
+
+.lc-y-axis .lc-tick {
+    align-self: start;
+    justify-self: end;
+    text-align: right;
+    transform: translateY(calc(var(--lc-pos) - 50%));
+}
+
+.lc-x-axis .lc-tick {
+    justify-self: start;
+    text-align: center;
+    transform: translateX(calc(var(--lc-pos) - 50%));
+}
+
+/* Plot */
+.lc-plot {
+    grid-area: plot;
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    touch-action: none;
+}
+
+.lc-plot::after {
+    position: absolute;
+    inset: 0;
+    border-bottom: 2px solid var(--lc-axis-color);
+    border-left: 2px solid var(--lc-axis-color);
+    box-sizing: border-box;
+    content: '';
+    pointer-events: none;
+}
+
+.lc-svg {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: visible;
+}
+
+.lc-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.lc-grid .lc-grid-line {
+    stroke: var(--lc-grid-color);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}
+
+.lc-series .lc-line {
+    fill: none;
+    stroke: var(--lc-series-color);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.lc-series .lc-point {
+    fill: var(--lc-series-color);
+}
+
+.lc-hover-point {
+    fill: var(--chart-highlight-color);
+    stroke: var(--chart-highlight-color);
+    stroke-width: 2;
+    filter: drop-shadow(0 0 2px var(--chart-highlight-glow));
+}
+
+.lc-crosshair {
+    stroke: var(--chart-hover-guide-color);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 3;
+}
+
+.lc-tooltip {
+    position: absolute;
+    transform: translate(-50%, max(calc(-100% - 8px), calc(0px - var(--lc-tooltip-point-y))));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--chart-tooltip-outline-color);
+    border-radius: 6px;
+    background: var(--chart-tooltip-background-color);
+    box-shadow: 0 4px 12px var(--chart-tooltip-shadow-color);
+    color: var(--chart-tooltip-text-color);
+    text-align: center;
+    white-space: pre;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.lc-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+}
+
+.lc-empty[hidden],
+.lc-tooltip[hidden],
+.lc-legend[hidden] {
+    display: none;
+}
+
+/* Legend */
+.lc-legend {
+    grid-area: legend;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+.lc-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lc-legend-swatch {
+    width: 12px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--lc-series-color);
+}

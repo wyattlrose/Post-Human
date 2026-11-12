@@ -1,0 +1,43 @@
+.photo-strip {
+    display: flex;
+    flex-direction: row;
+    gap: var(--grid-gap);
+    overflow-x: auto;
+    padding: 0.625rem 0;
+    flex: 0 0 auto;
+}
+
+.photo-strip-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    cursor: pointer;
+}
+
+.photo-strip-item.selected .photo-container {
+    outline: 2px solid var(--interactive-text-secondary);
+}
+
+.photo-strip-item .progress-photo.uncropped {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-strip-label {
+    margin-top: 0.25rem;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.photo-strip-item:has(.photo-strip-angle-select) {
+    gap: 0.25rem;
+}
+
+.photo-strip-angle-select,
+.photo-strip-remove {
+    width: 100px;
+    box-sizing: border-box;
+}

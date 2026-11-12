@@ -7,18 +7,21 @@
     <link rel="stylesheet" href="components/dropdown/dropdown.css">
     <link rel="stylesheet" href="components/slider/slider.css">
     <link rel="stylesheet" href="components/text-input/text-input.css">
+    <link rel="stylesheet" href="components/date-input/date-input.css">
     <link rel="stylesheet" href="components/checkbox/checkbox.css">
+    <link rel="stylesheet" href="components/drop-zone/drop-zone.css">
+    <link rel="stylesheet" href="components/photo-strip/photo-strip.css">
+    <link rel="stylesheet" href="components/segmented-control/segmented-control.css">
     <link rel="stylesheet" href="features/sidebar/sidebar.css">
     <link rel="stylesheet" href="features/progress-photos/progress-photos.css">
     <link rel="stylesheet" href="features/photo-editor/photo-editor.css">
+    <link rel="stylesheet" href="features/photo-upload/photo-upload.css">
+    <link rel="stylesheet" href="components/line-chart/line-chart.css">
+    <link rel="stylesheet" href="features/biometrics/biometrics.css">
+    <link rel="stylesheet" href="features/integrations/integrations.css">
 </head>
 <body>
     <div id="main-content">
-        <div id="welcome-screen">
-            <h1>Welcome</h1>
-            <p>Select a dashboard from the sidebar.</p>
-        </div>
-
         <div id="progress-photo-dashboard" style="display: none;">
             <h1>Progress Photos</h1>
             <div class="filter-container">
@@ -94,7 +97,7 @@
                     <div id="editor-date-select-dropdown" class="interactable-dropdown-menu" style="display:none;"></div>
                 </div>
             </div>
-            <div id="editor-thumbnail-strip" class="editor-thumbnail-strip"></div>
+            <div id="editor-thumbnail-strip" class="photo-strip"></div>
             <div class="editor-workspace">
             <div id="editor-canvas" class="editor-canvas" style="display: none;">
                 <div class="editor-stage">
@@ -152,9 +155,86 @@
             </div>
             </div>
         </div>
+
+        <div id="photo-upload-dashboard" style="display: none;">
+            <h1>Photo Upload</h1>
+            <div class="filter-container">
+                <div class="filter-item">
+                    <label for="upload-date" class="interactable-label">Date:</label>
+                    <input type="date" id="upload-date">
+                </div>
+                <div class="filter-item interactable-dropdown-container">
+                    <label class="interactable-label">Pose:</label>
+                    <button id="upload-pose-select-btn" class="filter-button interactable-button interactable-selector-btn">Select Pose</button>
+                    <div id="upload-pose-select-dropdown" class="interactable-dropdown-menu" style="display:none;"></div>
+                </div>
+            </div>
+            <div id="upload-drop-container" class="upload-drop-container"></div>
+            <div id="upload-thumbnail-strip" class="photo-strip"></div>
+            <div class="upload-actions" style="display: none;">
+                <button id="upload-save" class="interactable-button" disabled>Save</button>
+                <span id="upload-status" class="upload-status"></span>
+            </div>
+        </div>
     </div>
 
     <!-- Templates -->
+    <template id="tpl-biometrics-dashboard">
+        <div class="temp-dashboard biometrics-dashboard">
+            <h1>Biometrics</h1>
+            <h2>Weight</h2>
+            <div class="biometrics-header">
+                <div class="biometrics-periods"></div>
+                <div class="interactable-dropdown-container">
+                    <button type="button" class="interactable-button interactable-selector-btn biometrics-effort-btn">Effort</button>
+                    <div class="interactable-dropdown-menu biometrics-effort-menu" style="display:none;"></div>
+                </div>
+                <button type="button" class="interactable-button biometrics-secondary-btn biometrics-new-effort-btn">New Effort</button>
+                <button type="button" class="interactable-button biometrics-secondary-btn biometrics-withings-btn">Withings</button>
+            </div>
+            <form class="biometrics-effort-editor" hidden>
+                <div class="biometrics-field">
+                    <span class="interactable-label">Type</span>
+                    <div class="interactable-dropdown-container">
+                        <button type="button" class="interactable-button interactable-selector-btn biometrics-effort-type-btn">Type</button>
+                        <div class="interactable-dropdown-menu biometrics-effort-type-menu" style="display:none;"></div>
+                    </div>
+                </div>
+                <label class="biometrics-field">
+                    <span class="interactable-label">Start Date</span>
+                    <input type="date" class="biometrics-effort-start" required>
+                </label>
+                <label class="biometrics-field biometrics-effort-description-field">
+                    <span class="interactable-label">Description</span>
+                    <input type="text" class="text-input biometrics-effort-description" placeholder="e.g. Winter cut">
+                </label>
+                <button type="submit" class="interactable-button biometrics-effort-create">Create</button>
+                <button type="button" class="interactable-button biometrics-secondary-btn biometrics-effort-cancel">Cancel</button>
+            </form>
+            <div class="biometrics-chart"></div>
+        </div>
+    </template>
+    <template id="tpl-integrations-dashboard">
+        <div class="temp-dashboard integrations-dashboard">
+            <h1>Integrations</h1>
+            <section class="integrations-card">
+                <h2>Withings</h2>
+                <div class="integrations-field">
+                    <label for="withings-client_id" class="interactable-label">Client ID</label>
+                    <input type="text" id="withings-client_id" class="text-input" autocomplete="off" disabled>
+                </div>
+                <div class="integrations-field">
+                    <label for="withings-client_secret" class="interactable-label">Client Secret</label>
+                    <input type="text" id="withings-client_secret" class="text-input" autocomplete="off" disabled>
+                </div>
+                <div class="integrations-field">
+                    <label for="withings-api_endpoint" class="interactable-label">API Endpoint</label>
+                    <input type="text" id="withings-api_endpoint" class="text-input" autocomplete="off" disabled>
+                </div>
+                <p id="integrations-status" class="integrations-status" aria-live="polite">Loading…</p>
+            </section>
+        </div>
+    </template>
     <template id="tpl-header-item">
         <div class="header-item grid-header-cell"></div>
     </template>
@@ -184,15 +264,15 @@
         </div>
     </template>
 
-    <template id="tpl-editor-thumbnail">
-        <div class="editor-thumbnail">
+    <template id="tpl-photo-strip-item">
+        <div class="photo-strip-item">
             <div class="photo-container">
                 <img src="" alt="" class="progress-photo"
                      onload="applyDynamicCrop(this)"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <div class="photo-placeholder"></div>
             </div>
-            <div class="editor-thumbnail-label"></div>
+            <div class="photo-strip-label"></div>
         </div>
     </template>
 

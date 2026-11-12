@@ -30,3 +30,8 @@ export function applySliderConfig(slider: HTMLInputElement | null, setting: Phot
     slider.max = max.toString();
     slider.step = step.toString();
 }
+
+// Default landmarks (image pixels): Y Landmark 1 at 1/4 height, Y Landmark 2 at 3/4 height, X Landmark at the center
+export function defaultLandmarks(width: number, height: number): {yLandmark1: number, yLandmark2: number, xLandmark: number} {
+    return {yLandmark1: height / 4, yLandmark2: height * 3 / 4, xLandmark: width / 2};
+}
