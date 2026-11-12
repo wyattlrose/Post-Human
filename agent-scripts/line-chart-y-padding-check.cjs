@@ -66,15 +66,25 @@ app.whenReady().then(async () => {
                     yAxisPadding: true,
                     xTickValues: () => [0, 0.5, 1],
                     yTickValues: () => repeatedCustomTicks,
-                    renderXTick: value => 'X:' + value,
-                    renderYTick: value => 'Y:' + value
+                    formatX: value => 'X:' + value,
+                    formatY: value => 'Y:' + value
                 });
                 assertDomain(customAxisChart, 35, 95, 'repeated custom edge ticks');
                 assert(repeatedCustomTicks.join(',') === '40,40,45,70,70', 'repeated custom ticks were mutated');
                 assert([...customAxisChart.element.querySelectorAll('.lc-y-axis .lc-tick')].map(tick => tick.textContent).join(',') ===
                     'Y:35,Y:40,Y:40,Y:45,Y:70,Y:70,Y:95', 'custom y-axis tick rendering changed repeated values');
                 assert([...customAxisChart.element.querySelectorAll('.lc-x-axis .lc-tick')].map(tick => tick.textContent).join(',') ===
-                    'X:0,X:0.5,X:1', 'custom x-axis tick rendering changed');
+                    'X:0,X:0.5,X:1', 'formatted x-axis tick labels changed');
+                const plot = customAxisChart.element.querySelector('.lc-plot');
+                const plotRect = plot.getBoundingClientRect();
+                plot.dispatchEvent(new PointerEvent('pointermove', {
+                    clientX: plotRect.left + customAxisChart.scales.x(0),
+                    clientY: plotRect.top + customAxisChart.scales.y(42)
+                }));
+                assert(customAxisChart.element.querySelector('.lc-tooltip-x').textContent === 'X:0',
+                    'formatted x value was not used in the default tooltip');
+                assert(customAxisChart.element.querySelector('.lc-tooltip-y').textContent === 'Y:42',
+                    'formatted y value was not used in the default tooltip');
 
                 const singleCustomTickChart = await createChart([{x: 0, y: 42}, {x: 1, y: 68}], {
                     yAxisPadding: true,

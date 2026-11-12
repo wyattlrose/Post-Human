@@ -70,10 +70,21 @@ export interface WithingsSettings {
     lastUpdate?: number;
 }
 
+export interface BiometricsSettings {
+    idealBmiUpperBound?: number;
+    idealBmiLowerBound?: number;
+    height?: number;
+    /** Unix timestamp in seconds. */
+    dateOfBirth?: number;
+    /** Sex assigned at birth. */
+    sex?: 'M' | 'F';
+}
+
 export interface Settings {
     window?: WindowSettings;
     progress_photo?: ProgressPhotoSettings;
     withings?: WithingsSettings;
+    biometrics?: BiometricsSettings;
 }
 
 export type SettingsSection = keyof Settings;

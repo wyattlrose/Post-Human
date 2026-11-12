@@ -66,7 +66,7 @@
 .editor-landmark-line.hover,
 .editor-landmark-line.dragging {
     opacity: 1;
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 6px #000000b3;
 }
 
 .editor-landmark {
@@ -90,7 +90,7 @@
     opacity: 1;
     pointer-events: auto;
     transform: scale(1.5);
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 1px 6px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 0 1px #00000080, 0 1px 6px #000000b3;
 }
 
 .editor-landmark[data-landmark="xLandmark"] {
@@ -118,7 +118,7 @@
 .editor-canvas {
     width: 50%;
     padding: 0;
-    background-color: rgba(0, 0, 0, 0.35);
+    background-color: #00000059;
     border-radius: 0.75rem;
 }
 
@@ -150,6 +150,6 @@
     box-sizing: border-box;
     border: 3px solid #fff;
     /* Dims everything outside the crop; inner shadow keeps the border visible on light photos */
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45), 0 0 6px rgba(0, 0, 0, 0.7), inset 0 0 6px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 0 0 9999px #00000073, 0 0 6px #000000b3, inset 0 0 6px #000000b3;
     pointer-events: none;
 }

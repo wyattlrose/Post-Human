@@ -18,14 +18,14 @@
     --interactive-text-secondary: #94a3b8;
     --white: #ffffff;
     --black: #000000;
-    --shadow-color: rgba(0, 0, 0, 0.5);
-    --sidebar-shadow: rgba(0, 0, 0, 0.4);
+    --shadow-color: #00000080;
+    --sidebar-shadow: #00000066;
 
     /* Shared chart palette: accents, effort types, and neutral rendering roles */
-    --chart-accent-color: #009bce;
-    --chart-effort-cut-color: #ff7c5b;
-    --chart-effort-maintain-color: #ffd034;
-    --chart-effort-bulk-color: #72c674;
+    --chart-accent-color: #4eb6f7;
+    --chart-effort-cut-color: #ff35b3;
+    --chart-effort-maintain-color: #fff02e;
+    --chart-effort-bulk-color: #11ed7f;
     --chart-effort-unknown-color: var(--text-secondary);
     --chart-neutral-white-rgb: 255, 255, 255;
     --chart-neutral-black-rgb: 0, 0, 0;

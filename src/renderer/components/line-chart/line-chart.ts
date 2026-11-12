@@ -1,10 +1,11 @@
 import {linearScale, Scale} from './scale.js';
-import {innerTicks, niceTicks, timeTicks} from './ticks.js';
+import {niceTicks, timeTicks} from './ticks.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 export const EFFORT_MARKER_HOVER_DISTANCE = 18;
 
 export interface LineChartPoint {
+    /** Unix epoch time in seconds. */
     x: number;
     y: number;
 }
@@ -25,27 +26,29 @@ export interface LineChartHover {
 type Content = string | Node;
 
 export interface LineChartOptions {
-    /** 'time' gives calendar-aligned x ticks. */
-    xScale?: 'linear' | 'time';
-    /** Unit of x values when xScale is 'time'. */
-    timeUnit?: 's' | 'ms';
+    /** Approximate number of generated x-axis time ticks. */
     xTicks?: number;
+    /** Approximate number of generated y-axis ticks. */
     yTicks?: number;
-    /** Adds one y-tick interval of empty space at both ends of the y domain. */
+    /** Adds one adjacent tick interval of empty space beyond each end of the y-axis range; defaults to false. */
     yAxisPadding?: boolean;
-    /** Custom x tick generator for the visible x domain (overrides `xTicks`/`xScale` tick logic). */
+    /** Generates x-axis tick positions for a non-degenerate visible domain in epoch seconds; overrides `xTicks` generation. */
     xTickValues?: (min: number, max: number) => number[];
-    /** Custom y tick generator; the returned ticks must cover [min, max] and define the y domain. */
+    /** Generates y-axis tick positions from the data range; returned ticks must cover [min, max] and define the y domain. */
     yTickValues?: (min: number, max: number) => number[];
+    /** Formats epoch-second x values for axis labels and the default hover tooltip. */
     formatX?: (value: number) => string;
+    /** Formats y values for axis labels and the default hover tooltip. */
     formatY?: (value: number) => string;
-    renderXTick?: (value: number) => Content;
-    renderYTick?: (value: number) => Content;
+    /** Replaces the default hover tooltip with content rendered from the hovered points and chart. */
     renderTooltip?: (hovers: LineChartHover[], chart: LineChart) => Content;
+    /** Whether to draw a circle at each data point; defaults to true. */
     showPoints?: boolean;
+    /** Whether to show the legend for series that have labels; defaults to false. */
     showLegend?: boolean;
+    /** Text displayed in the plot when there are no data points. */
     emptyText?: string;
-    /** Called after every render; use with `plotLayer`/`overlay` and `scales` to draw annotations. */
+    /** Called after each render, including empty or zero-size renders; use `plotLayer`/`overlay` and `scales` to draw annotations. */
     onRender?: (chart: LineChart) => void;
 }
 
@@ -93,7 +96,7 @@ export class LineChart {
     /** SVG group drawn above the lines, in plot pixel coordinates. */
     readonly plotLayer: SVGGElement;
 
-    private readonly options: Required<Omit<LineChartOptions, 'renderXTick' | 'renderYTick' | 'renderTooltip' | 'onRender' | 'xTickValues' | 'yTickValues'>> & LineChartOptions;
+    private readonly options: Required<Omit<LineChartOptions, 'renderTooltip' | 'onRender' | 'xTickValues' | 'yTickValues'>> & LineChartOptions;
     private readonly yAxis: HTMLDivElement;
     private readonly xAxis: HTMLDivElement;
     private readonly legend: HTMLDivElement;
@@ -115,8 +118,6 @@ export class LineChart {
 
     constructor(container: HTMLElement, options: LineChartOptions = {}) {
         this.options = {
-            xScale: 'linear',
-            timeUnit: 'ms',
             xTicks: 6,
             yTicks: 5,
             yAxisPadding: false,
@@ -173,7 +174,7 @@ export class LineChart {
         this.render();
     }
 
-    /** Fixes the visible x range (instead of the data extent); null restores the data extent. */
+    /** Fixes the visible x range in epoch seconds (instead of the data extent); null restores the data extent. */
     setXDomain(domain: [number, number] | null) {
         this.xDomain = domain && domain[1] > domain[0] ? [domain[0], domain[1]] : null;
         this.render();
@@ -190,15 +191,13 @@ export class LineChart {
     }
 
     private xTickValues(min: number, max: number): number[] {
-        const {xScale, timeUnit, xTicks, xTickValues} = this.options;
+        const {xTicks, xTickValues} = this.options;
         if (xTickValues) return xTickValues(min, max);
-        if (xScale !== 'time') return innerTicks(min, max, xTicks);
-        const k = timeUnit === 's' ? 1000 : 1;
-        return timeTicks(min * k, max * k, xTicks).map(v => v / k);
+        return timeTicks(min, max, xTicks);
     }
 
     private render() {
-        const {yTicks, yTickValues, yAxisPadding, formatX, formatY, renderXTick, renderYTick, showPoints, onRender} = this.options;
+        const {yTicks, yTickValues, yAxisPadding, formatX, formatY, showPoints, onRender} = this.options;
         const points = this.series.flatMap(s => s.points);
         const w = this.width, h = this.height;
 
@@ -231,8 +230,8 @@ export class LineChart {
 
         const xValues = xMin === xMax ? [xMin] : this.xTickValues(xMin, xMax);
 
-        this.renderAxisTicks(this.yAxis, yValues, sy, 'y', w, formatY, renderYTick);
-        this.renderAxisTicks(this.xAxis, xValues, sx, 'x', h, formatX, renderXTick);
+        this.renderAxisTicks(this.yAxis, yValues, sy, 'y', w, formatY);
+        this.renderAxisTicks(this.xAxis, xValues, sx, 'x', h, formatX);
 
         this.series.forEach(s => {
             if (!s.points.length) return;
@@ -240,7 +239,7 @@ export class LineChart {
             const d = s.points.map((p, i) => `${i ? 'L' : 'M'}${sx(p.x)},${sy(p.y)}`).join(' ');
             g.appendChild(createSvg('path', {d, class: 'lc-line'}));
             if (showPoints) {
-                s.points.forEach(p => g.appendChild(createSvg('circle', {class: 'lc-point', cx: sx(p.x), cy: sy(p.y), r: 1.5})));
+                s.points.forEach(p => g.appendChild(createSvg('circle', {class: 'lc-point', cx: sx(p.x), cy: sy(p.y), r: 2.5})));
             }
             this.seriesLayer.appendChild(g);
         });
@@ -254,8 +253,7 @@ export class LineChart {
         scale: Scale,
         orientation: 'x' | 'y',
         extent: number,
-        format: (value: number) => string,
-        render?: (value: number) => Content
+        format: (value: number) => string
     ) {
         values.forEach(value => {
             const position = scale(value);
@@ -264,7 +262,7 @@ export class LineChart {
                 : createSvg('line', {class: 'lc-grid-line', x1: 0, x2: extent, y1: position, y2: position});
             this.gridLayer.appendChild(line);
 
-            const label = createDiv('lc-tick', render ? render(value) : format(value));
+            const label = createDiv('lc-tick', format(value));
             label.style.setProperty('--lc-pos', `${position}px`);
             axis.appendChild(label);
         });

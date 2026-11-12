@@ -28,9 +28,9 @@ export function innerTicks(min: number, max: number, count: number): number[] {
     return ticks;
 }
 
-const DAY = 86_400_000;
+const DAY = 86_400;
 
-/** Calendar-aligned ticks for millisecond timestamps within [min, max]. */
+/** Calendar-aligned ticks for epoch-second timestamps within [min, max]. */
 export function timeTicks(min: number, max: number, count: number): number[] {
     if (min === max) return [min];
     const target = (max - min) / Math.max(count, 1);
@@ -40,12 +40,12 @@ export function timeTicks(min: number, max: number, count: number): number[] {
 
     if (target < 28 * DAY) {
         const days = [1, 2, 7, 14].find(d => d * DAY >= target) ?? 14;
-        const d = new Date(min);
+        const d = new Date(min * 1000);
         d.setHours(0, 0, 0, 0);
         if (days === 7 || days === 14) d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // align to Monday
-        while (d.getTime() < min) d.setDate(d.getDate() + days);
-        while (d.getTime() <= max) {
-            ticks.push(d.getTime());
+        while (d.getTime() < min * 1000) d.setDate(d.getDate() + days);
+        while (d.getTime() <= max * 1000) {
+            ticks.push(d.getTime() / 1000);
             d.setDate(d.getDate() + days);
         }
         return ticks;
@@ -53,13 +53,13 @@ export function timeTicks(min: number, max: number, count: number): number[] {
 
     const monthsTarget = target / (30 * DAY);
     const months = [1, 2, 3, 6, 12].find(m => m >= monthsTarget) ?? Math.ceil(monthsTarget / 12) * 12;
-    const d = new Date(min);
+    const d = new Date(min * 1000);
     d.setHours(0, 0, 0, 0);
     d.setDate(1);
     d.setMonth(Math.floor(d.getMonth() / Math.min(months, 12)) * Math.min(months, 12));
-    while (d.getTime() < min) d.setMonth(d.getMonth() + months);
-    while (d.getTime() <= max) {
-        ticks.push(d.getTime());
+    while (d.getTime() < min * 1000) d.setMonth(d.getMonth() + months);
+    while (d.getTime() <= max * 1000) {
+        ticks.push(d.getTime() / 1000);
         d.setMonth(d.getMonth() + months);
     }
     return ticks;

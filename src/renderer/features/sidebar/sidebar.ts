@@ -3,6 +3,7 @@ import {loadPhotoEditor} from '../photo-editor/photo-editor.js';
 import {loadPhotoUpload} from '../photo-upload/photo-upload.js';
 import {cleanupBiometrics, loadBiometrics} from '../biometrics/biometrics.js';
 import {cleanupIntegrations, loadIntegrations} from '../integrations/integrations.js';
+import {cleanupSettings, loadSettings} from '../settings/settings.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.createElement('div');
@@ -16,7 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
         {name: 'Biometrics', icon: 'features/sidebar/assets/heart.svg', id: 'dash-biometrics', isSvg: true}
     ];
     const settingsIcons = [
-        {name: 'Integrations', icon: 'features/sidebar/assets/integrations.svg', id: 'dash-integrations', isSvg: true}
+        {name: 'Integrations', icon: 'features/sidebar/assets/integrations.svg', id: 'dash-integrations', isSvg: true},
+        {name: 'Settings', icon: 'features/sidebar/assets/settings.svg', id: 'dash-settings', isSvg: true}
     ];
 
     const createIcon = (item: typeof dashboardIcons[number] | typeof settingsIcons[number]) => {
@@ -59,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function switchDashboard(id: string) {
         cleanupIntegrations();
         cleanupBiometrics();
+        cleanupSettings();
 
         const welcomeScreen = document.getElementById('welcome-screen');
         const progressDashboard = document.getElementById('progress-photo-dashboard');
@@ -85,6 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
             loadPhotoUpload();
         } else if (id === 'dash-integrations') {
             loadIntegrations();
+        } else if (id === 'dash-settings') {
+            loadSettings();
         }
     }
 

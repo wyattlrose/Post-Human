@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="components/line-chart/line-chart.css">
     <link rel="stylesheet" href="features/biometrics/biometrics.css">
     <link rel="stylesheet" href="features/integrations/integrations.css">
+    <link rel="stylesheet" href="features/settings/settings.css">
 </head>
 <body>
     <div id="main-content">
@@ -232,6 +233,38 @@
                     <input type="text" id="withings-api_endpoint" class="text-input" autocomplete="off" disabled>
                 </div>
                 <p id="integrations-status" class="integrations-status" aria-live="polite">Loading…</p>
+            </section>
+        </div>
+    </template>
+    <template id="tpl-settings-dashboard">
+        <div class="temp-dashboard settings-dashboard">
+            <h1>Settings</h1>
+            <section class="settings-card">
+                <h2>Biometrics</h2>
+                <div class="settings-fields">
+                    <label class="settings-field" for="biometrics-idealBmiUpperBound">
+                        <span class="interactable-label">Ideal BMI upper bound</span>
+                        <input type="text" inputmode="decimal" id="biometrics-idealBmiUpperBound" class="text-input" data-setting="idealBmiUpperBound" disabled>
+                    </label>
+                    <label class="settings-field" for="biometrics-idealBmiLowerBound">
+                        <span class="interactable-label">Ideal BMI lower bound</span>
+                        <input type="text" inputmode="decimal" id="biometrics-idealBmiLowerBound" class="text-input" data-setting="idealBmiLowerBound" disabled>
+                    </label>
+                    <label class="settings-field" for="biometrics-height">
+                        <span class="interactable-label">Height (cm)</span>
+                        <input type="text" inputmode="decimal" id="biometrics-height" class="text-input" data-setting="height" disabled>
+                    </label>
+                    <label class="settings-field" for="biometrics-dateOfBirth">
+                        <span class="interactable-label">Date of birth</span>
+                        <input type="date" id="biometrics-dateOfBirth" class="text-input" data-setting="dateOfBirth" disabled>
+                    </label>
+                    <label class="settings-field" for="biometrics-sex">
+                        <span class="interactable-label">Sex assigned at birth (M/F)</span>
+                        <input type="text" maxlength="1" id="biometrics-sex" class="text-input" data-setting="sex" autocomplete="off" disabled>
+                    </label>
+                </div>
+                <p class="settings-status" role="status" aria-live="polite">Loading…</p>
+                <button type="button" class="interactable-button settings-retry" hidden>Retry</button>
             </section>
         </div>
     </template>

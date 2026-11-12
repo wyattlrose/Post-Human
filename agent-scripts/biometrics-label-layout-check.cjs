@@ -47,6 +47,13 @@ app.whenReady().then(async () => {
             };
             await page.loadBiometrics();
             await waitForRender(efforts.length);
+            document.querySelector('.biometrics-new-effort-btn').click();
+            const nowDate = new Date();
+            const todayInputDate = String(nowDate.getFullYear()).padStart(4, '0') + '-' +
+                String(nowDate.getMonth() + 1).padStart(2, '0') + '-' + String(nowDate.getDate()).padStart(2, '0');
+            assert(document.querySelector('.biometrics-effort-start').max === todayInputDate,
+                'biometrics effort editor did not set its maximum using Unix seconds');
+            document.querySelector('.biometrics-effort-cancel').click();
 
             const checkLabels = () => {
                 const plot = document.querySelector('.lc-plot').getBoundingClientRect();

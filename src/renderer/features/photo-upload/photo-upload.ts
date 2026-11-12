@@ -98,19 +98,6 @@ function todayTimestamp(): number {
     return Math.floor(new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000);
 }
 
-function toDateInputValue(date: number | null): string {
-    if (date === null) return '';
-    const d = new Date(date * 1000);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-function fromDateInputValue(value: string): number | null {
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-    if (!match) return null;
-    return Math.floor(new Date(+match[1], +match[2] - 1, +match[3]).getTime() / 1000);
-}
-
 // ---------- Header (date and pose shared by every photo) ----------
 
 function setupHeader(): void {
@@ -118,14 +105,14 @@ function setupHeader(): void {
     if (!input) return;
     dateInput = new DateInput(input, {
         onChange: value => {
-            currentDate = fromDateInputValue(value);
+            currentDate = value;
             renderStrip();
         }
     });
 }
 
 function renderHeader(): void {
-    if (dateInput) dateInput.value = toDateInputValue(currentDate);
+    if (dateInput) dateInput.value = currentDate;
     const pose = allPoses.find(p => p.poseId === currentPoseId);
     poseDropdown?.setLabel(pose ? pose.poseName : 'Select Pose');
 }

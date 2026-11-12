@@ -84,7 +84,8 @@ Whatever unit gets nearest to 10 X-Axis intervals without going over 10 interval
 #### Current Effort Display In The Chart
 
 When viewing any of the time range options, the start of current efforts should be marked on the chart.
-The current effort will be marked in the chart as a vertical line using the root chart palette color of the effort, shared with its label border, glow, and dropdown swatch:
+The current effort will be marked in the chart as a vertical line using the root chart palette color of the effort, shared with its label border, glow, and
+dropdown swatch:
 
 * Cut: Coral red (`--chart-effort-cut-color`, `#FF7C5B`)
 * Maintain: Yellow (`--chart-effort-maintain-color`, `#FFD034`)
@@ -92,17 +93,25 @@ The current effort will be marked in the chart as a vertical line using the root
 
 Chart accents and neutral chart roles, including label and tooltip colors, are also derived from the root `--chart-*` palette in `global.css`.
 
-Each effort's full description is displayed on the same horizontal line in a dedicated area above the plot, ideally centered over its line. Use 12px medium-weight, softly bright text with 6px horizontal padding in a 26px label row. Shift labels left as needed to avoid the plot's right edge and neighboring labels. If this would push the first label within 5px of the left edge, shift it right to retain that inset and push its neighbors right as needed. Adjacent labels retain a small visible gap. If all labels cannot fit within the plot at their natural widths, preserve the full descriptions and gap even though they extend beyond the right edge. Each label has a bottom border matching its effort line's color and thickness, aligned with the plot's upper edge.
+Each effort's full description is displayed on the same horizontal line in a dedicated area above the plot, ideally centered over its line. Use 12px
+medium-weight, softly bright text with 6px horizontal padding in a 26px label row. Shift labels left as needed to avoid the plot's right edge and neighboring
+labels. If this would push the first label within 5px of the left edge, shift it right to retain that inset and push its neighbors right as needed. Adjacent
+labels retain a small visible gap. If all labels cannot fit within the plot at their natural widths, preserve the full descriptions and gap even though they
+extend beyond the right edge. Each label has a bottom border matching its effort line's color and thickness, aligned with the plot's upper edge.
 
-Only one chart item is highlighted at a time. When the user mouses over an effort's line or its description, the line and description's bottom border gain a matching faint glow, the description text brightens over a very faint neutral background, and the data-point highlight and tooltip are hidden. Moving away from the effort allows normal data-point hover to resume.
+Only one chart item is highlighted at a time. When the user mouses over an effort's line or its description, the line and description's bottom border gain a
+matching faint glow, the description text brightens over a very faint neutral background, and the data-point highlight and tooltip are hidden. Moving away from
+the effort allows normal data-point hover to resume.
 
-Clicking an effort marker or its description with the primary mouse button should select that effort, just like selecting it from the Effort dropdown. The chart should immediately show the selected effort's date range, and the dropdown and effort editor should reflect the selection.
+Clicking an effort marker or its description with the primary mouse button should select that effort, just like selecting it from the Effort dropdown. The chart
+should immediately show the selected effort's date range, and the dropdown and effort editor should reflect the selection.
 
 #### Interaction
 
 * When mousing over the chart, the plot point nearest to the mouse (taking into consideration only the mouses position along the x-axis) should be highlighted
   and the weight and exact date value associated with that plot point should be displayed above.
-* The date text in the tooltip should be darker than the weight text. Center the text in the tooltip, use a subtle translucent white outline and dark shadow, and use doubled padding with a 6px gap between the date and weight rows.
+* The date text in the tooltip should be darker than the weight text. Center the text in the tooltip, use a subtle translucent white outline and dark shadow,
+  and use doubled padding with a 6px gap between the date and weight rows.
 
 ## Database Design
 
@@ -129,12 +138,23 @@ Starts with 3 default values:
 
 ## Settings Design
 
+These settings will be set on the settings page, and only read by the biometrics page to influence data display.
+
 ```json
 {
-  "idealWeightUpperBound": 90,
-  "idealWeightLowerBound": 80
+  biometrics
+  {
+    "idealBmiUpperBound": 27,
+    "idealBmiLowerBound": 24,
+    "height": 180,
+    "dateOfBirth": '<Unix timestamp in seconds>',
+    "sex": 'M/F'
+  }
 }
 ```
 
-**idealWeightUpperBound**: The upper bound of the users ideal weight range in KG. 
-**idealWeightLowerBound**: The lower bound of the users ideal weight range in KG.
+* **sex**: Users sex assigned at birth.
+* **dateOfBirth**: Users date of birth.
+* **height**: Users height in cm.
+* **idealBmiUpperBound**: The upper bound of the users ideal BMI.
+* **idealBmiLowerBound**: The lower bound of the users ideal BMI.

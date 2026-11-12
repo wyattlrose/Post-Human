@@ -1,0 +1,50 @@
+.settings-dashboard {
+    padding: 20px;
+}
+
+.settings-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 42rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    background-color: var(--surface-color);
+}
+
+.settings-card h2 {
+    margin: 0;
+}
+
+.settings-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: 1rem;
+}
+
+.settings-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.settings-status {
+    min-height: 1.25em;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+.settings-status.is-error {
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.settings-retry {
+    align-self: flex-start;
+}
+
+.settings-retry[hidden] {
+    display: none;
+}

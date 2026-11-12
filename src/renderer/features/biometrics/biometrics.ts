@@ -18,21 +18,12 @@ const EFFORT_LABEL_GAP = 8;
 const EFFORT_LABEL_LEFT_INSET = 5;
 
 const nowSeconds = () => Math.floor(Date.now() / 1000);
+const todayTimestamp = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.floor(today.getTime() / 1000);
+};
 let activeCleanup: (() => void) | null = null;
-
-/** 'YYYY-MM-DD' (local) for DateInput values. */
-function toDateInput(seconds: number): string {
-    const d = new Date(seconds * 1000);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-/** Local midnight of a 'YYYY-MM-DD' value, in seconds. */
-function fromDateInput(value: string): number | null {
-    const [y, m, d] = value.split('-').map(Number);
-    if (!y || !m || !d) return null;
-    return Math.floor(new Date(y, m - 1, d).getTime() / 1000);
-}
 
 /** CSS class carrying the effort type's shade. */
 const typeClass = (type: EffortType | undefined) => type ? `effort-type-${type.text.toLowerCase()}` : 'effort-type-unknown';
@@ -79,9 +70,8 @@ export async function loadBiometrics() {
     const typeMenu = $<HTMLDivElement>('.biometrics-effort-type-menu');
     const startInput = new DateInput($<HTMLInputElement>('.biometrics-effort-start'), {
         onChange: value => {
-            const start = fromDateInput(value);
-            if (start === null) return;
-            void editEffort({startDate: Math.min(start, nowSeconds())});
+            if (value === null) return;
+            void editEffort({startDate: Math.min(value, nowSeconds())});
         }
     });
     const descriptionInput = $<HTMLInputElement>('.biometrics-effort-description');
@@ -105,8 +95,6 @@ export async function loadBiometrics() {
     const effortLabel = (e: BiometricEffort) => [formatDate(e.startDate), typeOf(e.typeKey)?.text, e.description].filter(Boolean).join(' · ');
 
     const chart = new LineChart($('.biometrics-chart'), {
-        xScale: 'time',
-        timeUnit: 's',
         xTickValues: dateTicks,
         yTickValues: (min, max) => {
             const axis = weightAxis(min, max);
@@ -128,6 +116,7 @@ export async function loadBiometrics() {
             return content;
         },
         yAxisPadding: true,
+        showPoints: false,
         onRender: renderEffortMarkers,
         emptyText: 'No weight data in this range'
     });
@@ -273,8 +262,7 @@ export async function loadBiometrics() {
         if (!values) return;
         editor.classList.toggle('is-new', !!draft);
         createBtn.hidden = cancelBtn.hidden = !draft;
-        startInput.max = toDateInput(nowSeconds());
-        startInput.value = toDateInput(values.startDate);
+        startInput.value = values.startDate;
         if (document.activeElement !== descriptionInput) descriptionInput.value = values.description;
         renderTypeMenu(values.typeKey);
     }
@@ -311,7 +299,7 @@ export async function loadBiometrics() {
     }
 
     $('.biometrics-new-effort-btn').addEventListener('click', () => {
-        draft = {startDate: fromDateInput(toDateInput(nowSeconds()))!, typeKey: effortTypes[0]?.key ?? 1, description: ''};
+        draft = {startDate: todayTimestamp(), typeKey: effortTypes[0]?.key ?? 1, description: ''};
         descriptionInput.value = '';
         renderEditor();
         startInput.focus();
